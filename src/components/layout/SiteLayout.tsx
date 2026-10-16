@@ -1,0 +1,61 @@
+"use client";
+
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import LenisScroll from "@/components/providers/LenisScroll";
+import { CartProvider } from "@/components/providers/CartProvider";
+import { WishlistProvider } from "@/components/providers/WishlistProvider";
+import CartDrawer from "@/components/layout/CartDrawer";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
+import gsap from "gsap";
+import ScrollTrigger from "gsap/dist/ScrollTrigger";
+import { ViewTransitions } from "next-view-transitions";
+
+gsap.registerPlugin(ScrollTrigger);
+
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.history.scrollRestoration = "manual";
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    if (window.lenis) {
+      window.lenis.scrollTo(0, {
+        immediate: true,
+        force: true,
+      });
+    }
+
+    const timeout = setTimeout(() => {
+      ScrollTrigger.refresh();
+
+      if (window.lenis) {
+        window.lenis.resize();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [pathname]);
+
+  return (
+    <ViewTransitions>
+      <LenisScroll>
+        <CartProvider>
+          <WishlistProvider>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+            <CartDrawer />
+          </WishlistProvider>
+        </CartProvider>
+      </LenisScroll>
+    </ViewTransitions>
+
+  );
+}
