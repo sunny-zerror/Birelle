@@ -1,7 +1,6 @@
 import {
   HomeHero,
   HomeLookbook,
-  HomeManifesto,
   HomeCurated,
   HomeMaking,
   HomeCollection,
@@ -14,7 +13,6 @@ const HomePage = () => {
     <>
       <HomeHero />
       <HomeLookbook />
-      <HomeManifesto />
       <HomeCurated />
       <HomeMaking />
       <HomeCollection />

@@ -16,7 +16,7 @@ type Look = {
 
 const looks: Look[] = [
   {
-    image: "/images/homepage/seen_on_you/img1.svg",
+    image: "/images/homepage/seen_on_you/img1.jpeg",
     alt: "Customer in a portrait-print tee and painted trouser on a city street",
     hotspots: [
       { x: 27.6, y: 44.7, title: "Portrait Tee", href: "/shop/portrait-tee" },
@@ -24,7 +24,7 @@ const looks: Look[] = [
     ],
   },
   {
-    image: "/images/homepage/seen_on_you/img2.svg",
+    image: "/images/homepage/seen_on_you/img2.jpeg",
     alt: "Customer seated on stone steps in a painted-sleeve tee",
     hotspots: [
       { x: 51.4, y: 26.2, title: "Painted Sleeve Tee", href: "/shop/painted-sleeve-tee" },
@@ -32,7 +32,7 @@ const looks: Look[] = [
     ],
   },
   {
-    image: "/images/homepage/seen_on_you/img3.svg",
+    image: "/images/homepage/seen_on_you/img3.jpeg",
     alt: "Customer in a portrait-print tank leaning in a gallery doorway",
     hotspots: [
       { x: 42.9, y: 41.8, title: "The Painter's Tank", href: "/shop/painters-tank" },
@@ -40,7 +40,7 @@ const looks: Look[] = [
     ],
   },
   {
-    image: "/images/homepage/seen_on_you/img4.svg",
+    image: "/images/homepage/seen_on_you/img4.jpeg",
     alt: "Close portrait of a customer in a black printed tee",
     hotspots: [{ x: 36.7, y: 72.3, title: "Signature Tee", href: "/shop/signature-tee" }],
   },
@@ -55,7 +55,7 @@ const HomeSeenOnYou = () => {
           <p className="mt-2 text-sm">Shop our best looks, styled by you.</p>
         </header>
 
-        <div className="mt-stack grid grid-cols-2 gap-3 md:mt-28 md:grid-cols-4 md:gap-5">
+        <div className="mt-stack grid grid-cols-2 gap-3  md:grid-cols-4 md:gap-5">
           {looks.map((look) => (
             <figure key={look.image} className="home-seen-on-you__look relative aspect-3/4">
               <div className="absolute inset-0 overflow-hidden bg-neutral-100">

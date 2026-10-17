@@ -5,7 +5,7 @@ import { Link } from "next-view-transitions";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { RiArrowLeftSLine, RiCheckLine, RiHeartFill, RiHeartLine, RiShareForwardLine } from "@remixicon/react";
-import { SIZES, formatPrice } from "@/data/products";
+import { COLOUR_SWATCHES, SIZES, formatPrice, getColours } from "@/data/products";
 import type { Product } from "@/types";
 import { useCart } from "@/components/providers/CartProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
@@ -33,6 +33,8 @@ const details = [
 const ProductMain = ({ product }: { product: Product }) => {
   const { add } = useCart();
   const [size, setSize] = useState<string | null>(null);
+  const colours = getColours(product);
+  const [colour, setColour] = useState(product.colour);
   const [added, setAdded] = useState(false);
   const wishlist = useWishlist();
   const wishlisted = wishlist.has(product.id);
@@ -55,7 +57,7 @@ const ProductMain = ({ product }: { product: Product }) => {
       setNeedsSize(true);
       return;
     }
-    add(product.id, size);
+    add(product.id, size, colour);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2200);
   };
@@ -74,11 +76,12 @@ const ProductMain = ({ product }: { product: Product }) => {
       {/* Gallery — scrolls past while the info column stays put */}
       <div className="pdp-gallery flex flex-col gap-1 bg-[#F7F7F7]">
         {[product.image, product.featured].map((src, i) => (
-          <div key={src} className="pdp-gallery__item relative aspect-3/4 overflow-hidden md:aspect-auto md:h-screen">
+          <div key={src} className="pdp-gallery__item relative flex aspect-3/4 items-center justify-center overflow-hidden md:aspect-auto md:h-screen">
             <img
               src={src}
               alt={i === 0 ? product.title : `${product.title} styled on model`}
-              className="cover"
+              // Packshot sits centred at 80% width; the model shot fills the frame
+              className={i === 0 ? "max-h-full w-[60%] object-contain" : "cover"}
               fetchPriority={i === 0 ? "high" : undefined}
               loading={i === 0 ? undefined : "lazy"}
             />
@@ -89,44 +92,51 @@ const ProductMain = ({ product }: { product: Product }) => {
       {/* Info */}
       <div className="pdp-info relative">
         <div className="sticky top-0 flex min-h-screen flex-col px-gutter pb-16 pt-8 md:pt-[calc(var(--spacing-header))]">
-          <div className="pdp-reveal flex items-center justify-between">
-            <Link
-              href="/shop"
-              className="group inline-flex text-sm items-center gap-1  text-ink transition-opacity hover:opacity-60"
-            >
-              <RiArrowLeftSLine size={14} className={`transition-transform duration-500 ${ease} group-hover:-translate-x-1`} />
-              Collection 2026
-            </Link>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                aria-pressed={wishlisted}
-                onClick={() => wishlist.toggle(product.id)}
-                className="center size-8 transition-transform duration-300 active:scale-90"
-              >
-                {wishlisted ? <RiHeartFill size={17} /> : <RiHeartLine size={17} />}
-              </button>
-              <button type="button" aria-label="Share" onClick={share} className="center size-8 transition-opacity hover:opacity-60">
-                <RiShareForwardLine size={17} />
-              </button>
-            </div>
-          </div>
 
-          <div className="mx-auto flex w-full max-w-[30rem] flex-1 flex-col items-center justify-center pt-12 text-center">
+          <div className="mx-auto flex w-full max-w-[30rem] flex-1 flex-col items-stretch justify-center pt-12 text-left">
             {product.isNew && <p className="pdp-reveal text-sm text-ink">New In</p>}
-            <h1 className="pdp-reveal primary-font mt-3 text-2xl font-normal uppercase leading-tight text-ink">
-              {product.title}
-            </h1>
-            <p className="pdp-reveal mt-6 text-base text-ink">{formatPrice(product.price)}</p>
+            {/* Name and price on one line */}
+            <div className="pdp-reveal mt-3 flex items-baseline justify-between gap-6">
+              <h1 className="primary-font text-2xl font-normal uppercase leading-tight text-ink">{product.title}</h1>
+              <p className="shrink-0 text-base tabular-nums text-ink">{formatPrice(product.price)}</p>
+            </div>
 
-            <p className="pdp-reveal mt-6 text-base text-ink">
-              Colour: <span className="ml-1 inline-block size-1.5 rounded-full bg-neutral-400 align-middle" />{" "}
-              {product.colour}
+            {/* Colours — label left, swatches right */}
+            <div className="pdp-reveal mt-8 flex items-center justify-between gap-6 border-t border-line pt-5">
+            <p className="text-base text-ink">
+              Colour: <span className="ml-1">{colour}</span>
             </p>
+            <div role="radiogroup" aria-label="Colour" className="flex gap-2.5">
+              {colours.map((c) => {
+                const on = c === colour;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    aria-label={c}
+                    title={c}
+                    onClick={() => setColour(c)}
+                    className={`center size-7 rounded-full border transition-colors duration-300 ${
+                      on ? "border-ink" : "border-transparent hover:border-ink/30"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="size-5 rounded-full ring-1 ring-ink/10"
+                      style={{ background: COLOUR_SWATCHES[c] ?? "#ccc" }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            </div>
 
-            {/* Sizes */}
-            <div role="radiogroup" aria-label="Size" className="pdp-reveal mt-5 flex gap-1">
+            {/* Sizes — label left, options right */}
+            <div className="pdp-reveal mt-4 flex items-center justify-between gap-6 border-t border-line pt-4">
+            <p className="text-base text-ink">Size</p>
+            <div role="radiogroup" aria-label="Size" className="-mr-3 flex gap-1">
               {SIZES.map((s) => {
                 const on = s === size;
                 return (
@@ -152,18 +162,20 @@ const ProductMain = ({ product }: { product: Product }) => {
                 );
               })}
             </div>
+            </div>
             <p
               aria-live="polite"
-              className={`h-5 pt-1 text-xs text-accent transition-opacity duration-300 ${needsSize ? "opacity-100" : "opacity-0"}`}
+              className={`h-5 pt-1 text-right text-xs text-accent transition-opacity duration-300 ${needsSize ? "opacity-100" : "opacity-0"}`}
             >
               {needsSize ? "Please select a size" : ""}
             </p>
 
-            {/* Add to cart */}
+            {/* Add to cart + wishlist */}
+            <div className="pdp-reveal mt-3 flex w-full gap-2">
             <button
               type="button"
               onClick={addToCart}
-              className={`pdp-reveal relative mt-3 h-11 w-full overflow-hidden text-xs uppercase tracking-wider text-ink transition-colors duration-500 ${
+              className={`relative h-11 flex-1 overflow-hidden text-xs uppercase tracking-wider text-ink transition-colors duration-500 ${
                 added ? "bg-deep text-white" : "bg-[#b9c7cf] hover:bg-deep hover:text-white"
               }`}
             >
@@ -183,6 +195,16 @@ const ProductMain = ({ product }: { product: Product }) => {
                 <RiCheckLine size={14} /> {added ? `Added — size ${size}` : ""}
               </span>
             </button>
+            <button
+              type="button"
+              aria-label={wishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
+              aria-pressed={wishlisted}
+              onClick={() => wishlist.toggle(product.id)}
+              className="center size-11 shrink-0 border border-ink/20 text-ink transition-colors duration-300 hover:border-ink active:scale-95"
+            >
+              {wishlisted ? <RiHeartFill size={18} className="animate-panel-in" /> : <RiHeartLine size={18} />}
+            </button>
+            </div>
 
             <p className="pdp-reveal mt-8 text-left  text-ink">{product.description}</p>
 

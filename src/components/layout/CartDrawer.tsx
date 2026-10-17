@@ -136,7 +136,7 @@ const CartDrawer = () => {
           {lines.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-center">
               <p className="primary-font text-xl text-deep">Your cart is empty</p>
-              <Button type="bracket" href="/allproducts" className="mt-6">
+              <Button href="/shop" className="mt-6">
                 Shop the collection
               </Button>
             </div>
@@ -157,7 +157,7 @@ const CartDrawer = () => {
                       <p className="text-sm font-medium text-ink">{line.product.title}</p>
                       <p className="shrink-0 text-sm text-ink">{formatPrice(line.product.price * line.qty)}</p>
                     </div>
-                    <p className="mt-3 text-sm text-ink">Colour: {line.product.colour}</p>
+                    <p className="mt-3 text-sm text-ink">Colour: {line.colour}</p>
                     <p className="mt-1.5 text-sm text-ink">Size: {line.size}</p>
 
                     <div className="mt-4 flex items-center gap-5">

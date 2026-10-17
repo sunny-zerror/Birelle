@@ -6,9 +6,10 @@ import type { Product } from "@/types";
 
 const STORAGE_KEY = "birelle-cart";
 
-type StoredLine = { id: string; size: string; qty: number };
+type StoredLine = { id: string; size: string; qty: number; colour?: string };
 
-export type CartLine = StoredLine & { key: string; product: Product };
+// colour is always resolved on a line (older saved lines fall back to the product default)
+export type CartLine = StoredLine & { key: string; product: Product; colour: string };
 
 type CartContextValue = {
   lines: CartLine[];
@@ -17,7 +18,7 @@ type CartContextValue = {
   isOpen: boolean;
   open: () => void;
   close: () => void;
-  add: (id: string, size: string, qty?: number) => void;
+  add: (id: string, size: string, colour?: string, qty?: number) => void;
   setQty: (key: string, qty: number) => void;
   remove: (key: string) => void;
   clear: () => void;
@@ -25,7 +26,8 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const lineKey = (id: string, size: string) => `${id}__${size}`;
+const lineKey = (id: string, size: string, colour = "") => `${id}__${size}__${colour}`;
+const keyOf = (l: StoredLine) => lineKey(l.id, l.size, l.colour);
 
 // --- Persisted store (localStorage), read via useSyncExternalStore ---------
 const EMPTY: StoredLine[] = [];
@@ -75,23 +77,24 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  const add = useCallback((id: string, size: string, qty = 1) => {
+  const add = useCallback((id: string, size: string, colour?: string, qty = 1) => {
+    const resolved = colour ?? getProduct(id)?.colour;
     writeStore((prev) => {
-      const existing = prev.find((l) => l.id === id && l.size === size);
+      const existing = prev.find((l) => keyOf(l) === lineKey(id, size, resolved));
       if (existing) return prev.map((l) => (l === existing ? { ...l, qty: l.qty + qty } : l));
-      return [...prev, { id, size, qty }];
+      return [...prev, { id, size, qty, colour: resolved }];
     });
     setIsOpen(true);
   }, []);
 
   const setQty = useCallback((key: string, qty: number) => {
     writeStore((prev) =>
-      qty < 1 ? prev.filter((l) => lineKey(l.id, l.size) !== key) : prev.map((l) => (lineKey(l.id, l.size) === key ? { ...l, qty } : l)),
+      qty < 1 ? prev.filter((l) => keyOf(l) !== key) : prev.map((l) => (keyOf(l) === key ? { ...l, qty } : l)),
     );
   }, []);
 
   const remove = useCallback((key: string) => {
-    writeStore((prev) => prev.filter((l) => lineKey(l.id, l.size) !== key));
+    writeStore((prev) => prev.filter((l) => keyOf(l) !== key));
   }, []);
 
   const clear = useCallback(() => writeStore(() => []), []);
@@ -99,7 +102,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const value = useMemo<CartContextValue>(() => {
     const lines = stored.flatMap((l) => {
       const product = getProduct(l.id);
-      return product ? [{ ...l, key: lineKey(l.id, l.size), product }] : [];
+      return product ? [{ ...l, key: keyOf(l), product, colour: l.colour ?? product.colour }] : [];
     });
 
     return {

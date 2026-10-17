@@ -9,10 +9,7 @@ type Props = {
 
 const ProductCompleteLook = ({ product, pair }: Props) => {
   return (
-    <section id="pdp-complete-look" className="pdp-complete-look bg-white md:grid md:grid-cols-2">
-      <div className="relative aspect-3/4 overflow-hidden bg-neutral-100 md:aspect-auto md:min-h-screen">
-        <img src={product.featured} alt={`${product.title} styled on model`} className="cover" loading="lazy" />
-      </div>
+    <section id="pdp-complete-look" className="pdp-complete-look bg-white center">
 
       <div className="center flex-col px-gutter py-section text-center">
         <h6 className="primary-font  font-normal uppercase  text-deep">Complete the Look</h6>

@@ -1,117 +1,278 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Link } from "next-view-transitions";
 import { RiHeartFill, RiHeartLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
-import "swiper/css";
-import { products } from "@/data/products";
+import { formatPrice, products } from "@/data/products";
 import { useWishlist } from "@/components/providers/WishlistProvider";
+import type { Product } from "@/types";
 
-// Listed twice so loop mode always has enough slides on both sides
+// Listed twice so the loop always has cards waiting off-screen on both sides
 const slides = [...products, ...products];
+const COUNT = slides.length;
+const START = 3;
 
-// Side cards are 30% smaller than the centre card
+// Side cards are 30% smaller than the centre card, all sitting on the same image baseline
 const SIDE_SCALE = 0.7;
+const AUTOPLAY_MS = 2500;
+const EASE = 0.075; // how quickly the track glides to its target each frame (at 60fps)
+const DRAG_EASE = 0.35; // tighter follow while the pointer is down
+const THROW = 180; // ms of release velocity carried into the snap
 
-/**
- * Scales every slide by its distance from the centre and pulls the shrunken
- * cards inwards, so the gap between all cards stays equal to spaceBetween.
- */
-const layoutSlides = (swiper: SwiperType) => {
-  const gap = Number(swiper.params.spaceBetween) || 0;
+// Wraps a slide's distance from the centre into [-COUNT/2, COUNT/2) so the loop never ends
+const wrap = (d: number) => ((((d + COUNT / 2) % COUNT) + COUNT) % COUNT) - COUNT / 2;
 
-  swiper.slides.forEach((slide) => {
-    const width = slide.offsetWidth;
-    const step = width + gap;
-    // Distance from the viewport centre in slides (negative = left)
-    const d = (slide.offsetLeft + swiper.translate + width / 2 - swiper.width / 2) / step;
-    const abs = Math.abs(d);
-    const scale = 1 - Math.min(abs, 1) * (1 - SIDE_SCALE);
+type CardProps = { product: Product; isWished: boolean; onToggle: () => void };
 
-    // Where the card centre should sit vs. where Swiper naturally puts it
-    const first = width / 2 + gap + (width * SIDE_SCALE) / 2;
-    const rest = width * SIDE_SCALE + gap;
-    const target = abs <= 1 ? abs * first : first + (abs - 1) * rest;
-    const shift = Math.sign(d) * target - d * step;
+const Card = ({ product, isWished, onToggle }: CardProps) => (
+  <article className="group relative">
+    {/* Image scales up on hover; the centre card swaps to its featured shot */}
+    <div className="home-curated__media relative aspect-3/4  overflow-hidden">
+      <Link href={product.href} draggable={false} className="absolute flex items-end justify-center inset-0" aria-label={product.title}>
+        <img
+          src={product.image}
+          alt={product.title}
+          draggable={false}
+          className="w-[80%] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-108"
+          loading="lazy"
+        />
+        <img
+          src={product.featured}
+          alt=""
+          draggable={false}
+          className="cover absolute inset-0 opacity-0 transition-[opacity,scale] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-108 in-[.is-active]:opacity-100"
+          loading="lazy"
+        />
+        {/* Centre card only — shade + name and price spread across the bottom of the image */}
+        <span className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-500 in-[.is-active]:opacity-100" />
+        <span className="absolute inset-x-0 bottom-0 flex items-baseline justify-between gap-4 p-4 text-sm uppercase tracking-wide text-white opacity-0 transition-opacity duration-500 in-[.is-active]:opacity-100">
+          <span className="truncate">{product.title}</span>
+          <span className="shrink-0 tabular-nums">{formatPrice(product.price)}</span>
+        </span>
+      </Link>
 
-    slide.style.transform = `translate3d(${shift}px, 0, 0) scale(${scale})`;
-  });
-};
+      <button
+        type="button"
+        aria-label={`${isWished ? "Remove" : "Add"} ${product.title} ${isWished ? "from" : "to"} wishlist`}
+        aria-pressed={isWished}
+        onClick={onToggle}
+        className="center absolute right-2 top-2 size-8 text-ink opacity-0 in-[.is-active]:text-white transition-[opacity,scale] duration-500 group-hover:opacity-100 hover:opacity-60! focus-visible:opacity-100 in-[.is-active]:opacity-100 active:scale-90"
+      >
+        {isWished ? <RiHeartFill className="size-5" /> : <RiHeartLine className="size-5" />}
+      </button>
+    </div>
 
-const setSlideTransition = (swiper: SwiperType, duration: number) => {
-  swiper.slides.forEach((slide) => {
-    slide.style.transitionDuration = `${duration}ms`;
-  });
-};
+    {/* Side cards — name (underlined) over price, centred, rises in on hover. Kept in the layout but hidden on the centre card */}
+    <Link
+      href={product.href}
+      tabIndex={-1}
+      draggable={false}
+      className="flex  flex-col items-center text-center text-ink opacity-0 transition-[opacity,translate] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:opacity-100 in-[.is-active]:invisible"
+    >
+      <div className="block w-fit">
+      <h3 className="max-w-full  border-ink pb-1 text-base uppercase ">{product.title}</h3>
+      <div className="w-full h-[1px] bg-black"></div>
+      </div>
+      <p className="mt-1 text-base ">{formatPrice(product.price)}</p>
+    </Link>
+  </article>
+);
 
 const HomeCurated = () => {
   const { has, toggle } = useWishlist();
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Custom carousel: one rAF loop glides `current` towards `target` (both measured in slides).
+  // Autoplay and snapping move `target` by whole slides; dragging moves it freely.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const els = slideRefs.current;
+    if (!viewport) return;
+
+    let current = START;
+    let target = START;
+    let active = -1;
+    let width = 0; // centre card width, px
+    let mediaHeight = 0;
+    let gap = 0;
+    let isHovering = false;
+    let drag: { x: number; target: number; lastX: number; lastT: number; v: number; moved: boolean } | null = null;
+    let frame = 0;
+    let last = performance.now();
+    // Tick only for changes the user caused by dragging (incl. the glide after release), not autoplay
+    let isUserDriven = false;
+    const tickSound = new Audio("/audio/tick.mp3");
+    tickSound.preload = "auto";
+    const playTick = () => {
+      // Clone so quick successive ticks overlap instead of cutting each other off
+      const s = tickSound.cloneNode() as HTMLAudioElement;
+      s.volume = 0.5;
+      s.play().catch(() => {});
+    };
+
+    const measure = () => {
+      const el = els[0];
+      if (!el) return;
+      width = el.offsetWidth;
+      mediaHeight = el.querySelector<HTMLElement>(".home-curated__media")?.offsetHeight ?? el.offsetHeight;
+      gap = window.matchMedia("(min-width: 48rem)").matches ? 20 : 12;
+    };
+
+    // Distance between the centre card and its neighbour — one "slide" of drag
+    const stepPx = () => width / 2 + gap + (width * SIDE_SCALE) / 2;
+
+    const render = () => {
+      const first = stepPx();
+      const rest = width * SIDE_SCALE + gap;
+
+      els.forEach((el, i) => {
+        if (!el) return;
+        const d = wrap(i - current);
+        const abs = Math.abs(d);
+        const scale = 1 - Math.min(abs, 1) * (1 - SIDE_SCALE);
+        const offset = Math.sign(d) * (abs <= 1 ? abs * first : first + (abs - 1) * rest);
+        // Scale from the image's bottom edge so every image sits on the same baseline
+        el.style.transformOrigin = `50% ${mediaHeight}px`;
+        el.style.transform = `translate3d(${offset}px, 0, 0) scale(${scale})`;
+        el.style.zIndex = String(COUNT - Math.round(abs));
+      });
+
+      // Flag the centre card for the featured-shot / overlay styles
+      const next = ((Math.round(current) % COUNT) + COUNT) % COUNT;
+      if (next !== active) {
+        els[active]?.classList.remove("is-active");
+        els[next]?.classList.add("is-active");
+        if (isUserDriven && active !== -1) playTick();
+        active = next;
+      }
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min((now - last) / (1000 / 60), 4); // frames elapsed at 60fps
+      last = now;
+      const k = 1 - Math.pow(1 - (drag ? DRAG_EASE : EASE), dt);
+      if (Math.abs(target - current) > 0.0005) {
+        current += (target - current) * k;
+        render();
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX, target, lastX: e.clientX, lastT: e.timeStamp, v: 0, moved: false };
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) > 6) {
+        drag.moved = true;
+        viewport.setPointerCapture(e.pointerId);
+      }
+      if (!drag.moved) return;
+      isUserDriven = true;
+      const dt = e.timeStamp - drag.lastT;
+      if (dt > 0) drag.v = 0.8 * ((e.clientX - drag.lastX) / dt) + 0.2 * drag.v; // px/ms, smoothed
+      drag.lastX = e.clientX;
+      drag.lastT = e.timeStamp;
+      target = drag.target - dx / stepPx();
+    };
+
+    const onUp = () => {
+      if (!drag) return;
+      const moved = drag.moved;
+      // Carry a little of the throw, then snap to the nearest whole slide
+      if (moved) target = Math.round(target - (drag.v * THROW) / stepPx());
+      drag = null;
+      // Swallow the click that follows a drag so links don't fire
+      if (moved) {
+        const block = (ev: MouseEvent) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+        };
+        viewport.addEventListener("click", block, { capture: true, once: true });
+        setTimeout(() => viewport.removeEventListener("click", block, { capture: true }), 0);
+      }
+    };
+
+    const onEnter = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") isHovering = true;
+    };
+    const onLeave = () => {
+      isHovering = false;
+    };
+
+    const autoplay = window.setInterval(() => {
+      if (drag || isHovering || document.hidden) return;
+      isUserDriven = false;
+      target = Math.round(target) + 1;
+    }, AUTOPLAY_MS);
+
+    const ro = new ResizeObserver(() => {
+      measure();
+      render();
+    });
+    ro.observe(viewport);
+
+    viewport.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    viewport.addEventListener("pointerenter", onEnter);
+    viewport.addEventListener("pointerleave", onLeave);
+
+    measure();
+    render();
+    frame = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearInterval(autoplay);
+      ro.disconnect();
+      viewport.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      viewport.removeEventListener("pointerenter", onEnter);
+      viewport.removeEventListener("pointerleave", onLeave);
+    };
+  }, []);
 
   return (
     <section id="home-curated" className="home-curated section overflow-hidden bg-white">
       <div className="home-curated__head container flex items-baseline justify-between">
         <h2 className=" uppercase text-deep">Curated Selection</h2>
-        <Button type="bracket" href="/shop">View All</Button>
+        <Button href="/shop">View All</Button>
       </div>
 
-      <Swiper
-        className="home-curated__slider mt-stack md:mt-24"
-        modules={[Autoplay]}
-        slidesPerView="auto"
-        centeredSlides
-        loop
-        initialSlide={3}
-        speed={900}
-        spaceBetween={12}
-        breakpoints={{ 768: { spaceBetween: 20 } }}
-        autoplay={{ delay: 2000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-        onAfterInit={layoutSlides}
-        onResize={layoutSlides}
-        onSetTranslate={layoutSlides}
-        onSetTransition={setSlideTransition}
+      {/* Vertical swipes still scroll the page; horizontal ones drag the track */}
+      <div
+        ref={viewportRef}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Curated selection"
+        className="home-curated__slider relative mt-stack cursor-grab touch-pan-y select-none active:cursor-grabbing md:mt-24"
       >
-        {slides.map((product, i) => (
-          <SwiperSlide
-            key={`${product.href}-${i}`}
-            className="home-curated__slide w-[60vw]! origin-bottom md:w-[20vw]!"
-          >
-            <article className="group relative aspect-3/4 overflow-hidden ">
-              <Link href={product.href} className="absolute inset-0" aria-label={product.title}>
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="cover"
-                  loading="lazy"
-                />
-                {/* Featured shot — always on the centre card, on hover elsewhere */}
-                <img
-                  src={product.featured}
-                  alt=""
-                  className="cover absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 in-[.swiper-slide-active]:opacity-100"
-                  loading="lazy"
-                />
-                <span className="absolute inset-x-0 bottom-0 h-1/4 bg-linear-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 in-[.swiper-slide-active]:opacity-100" />
-              </Link>
+        {/* In-flow copy of a card gives the track its height; the real cards are absolutely positioned */}
+        <div aria-hidden="true" inert className="invisible mx-auto w-[60vw] md:w-[20vw]">
+          <Card product={slides[0]} isWished={false} onToggle={() => {}} />
+        </div>
 
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between p-3 text-white opacity-0 transition-opacity duration-500 group-hover:opacity-100 in-[.swiper-slide-active]:opacity-100">
-                <h3 className="text-cta text-white!">{product.title}</h3>
-                <button
-                  type="button"
-                  aria-label={`${has(product.id) ? "Remove" : "Add"} ${product.title} ${has(product.id) ? "from" : "to"} wishlist`}
-                  aria-pressed={has(product.id)}
-                  onClick={() => toggle(product.id)}
-                  className="pointer-events-auto center size-6 transition-[opacity,transform] duration-300 hover:opacity-60 active:scale-90"
-                >
-                  {has(product.id) ? <RiHeartFill size={14} /> : <RiHeartLine size={14} />}
-                </button>
-              </div>
-            </article>
-          </SwiperSlide>
+        {slides.map((product, i) => (
+          <div
+            key={`${product.href}-${i}`}
+            ref={(el) => {
+              slideRefs.current[i] = el;
+            }}
+            className="home-curated__slide absolute left-1/2 top-0 -ml-[30vw] w-[60vw] will-change-transform md:-ml-[10vw] md:w-[20vw]"
+          >
+            <Card product={product} isWished={has(product.id)} onToggle={() => toggle(product.id)} />
+          </div>
         ))}
-      </Swiper>
+      </div>
     </section>
   );
 };

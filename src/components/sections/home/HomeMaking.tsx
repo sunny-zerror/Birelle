@@ -77,7 +77,6 @@ type Line = {
   right: HTMLElement;
   block: number;
   isTitle: boolean;
-  /** Line centre measured from the top of its title / copy box */
   offset: number;
   leftWidth: number;
   rightWidth: number;
@@ -133,7 +132,7 @@ const HomeMaking = () => {
         maxTravel = Math.max(0, vw / 2 - edge);
         parallax = isMobile ? 30 : 45;
         titleGap = isMobile ? 28 : 50;
-        clearance = isMobile ? 24 : 35;
+        clearance = isMobile ? 12 : 35;
         avoid = isMobile ? 90 : 100;
 
         // Label + image form one centred obstacle the copy has to part around
@@ -161,9 +160,7 @@ const HomeMaking = () => {
               leftPad: parseFloat(getComputedStyle(left).paddingRight) || 0,
               rightPad: parseFloat(getComputedStyle(right).paddingLeft) || 0,
             };
-          })
-          // Copy lines wrap and slide under the image on phones; only titles part there
-          .filter((line) => line.isTitle || !isMobile);
+          });
       };
 
       const setClip = (reveal: number) => {
@@ -340,25 +337,27 @@ const HomeMaking = () => {
                 </span>
               </h3>
 
+              {/* On phones each half wraps inside the column beside the image (--mk-side = half the screen
+                  minus half the 7.75rem image, the 12px clearance and a 12px gutter) so it can part like desktop */}
               <div
-                className="home-making__copy absolute left-1/2 top-0 z-7 w-max -translate-x-1/2 text-sm text-ink max-md:z-4 max-md:w-[min(82vw,20.5rem)] max-md:text-center"
+                className="home-making__copy absolute left-1/2 top-0 z-7 w-max -translate-x-1/2 text-sm text-ink max-md:text-xs max-md:[--mk-side:calc(50vw-5.375rem)]"
                 style={{ transform: "translate3d(0,200vh,0)" }}
               >
                 {step.lines.map(([left, right]) => (
                   <p
                     key={left}
                     data-split-line
-                    className="home-making__line relative mx-auto flex w-max items-baseline justify-center whitespace-nowrap max-md:block max-md:w-full max-md:whitespace-normal"
+                    className="home-making__line relative mx-auto flex w-max items-baseline justify-center whitespace-nowrap max-md:mb-2 max-md:items-start max-md:whitespace-normal"
                   >
                     <span
                       data-half="left"
-                      className="inline-block pr-[0.25em] text-right will-change-transform max-md:inline max-md:pr-0"
+                      className="inline-block pr-[0.25em] text-right will-change-transform max-md:max-w-(--mk-side)"
                     >
                       {left}
                     </span>
                     <span
                       data-half="right"
-                      className="inline-block pl-[0.25em] text-left will-change-transform max-md:inline max-md:pl-[0.25em]"
+                      className="inline-block pl-[0.25em] text-left will-change-transform max-md:max-w-(--mk-side)"
                     >
                       {right}
                     </span>

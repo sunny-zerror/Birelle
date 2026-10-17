@@ -6,6 +6,8 @@ import LenisScroll from "@/components/providers/LenisScroll";
 import { CartProvider } from "@/components/providers/CartProvider";
 import { WishlistProvider } from "@/components/providers/WishlistProvider";
 import CartDrawer from "@/components/layout/CartDrawer";
+import Loader from "@/components/layout/Loader";
+import { LoaderProvider } from "@/components/providers/LoaderProvider";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
@@ -46,14 +48,17 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <ViewTransitions>
       <LenisScroll>
+        <LoaderProvider>
         <CartProvider>
           <WishlistProvider>
             <Header />
             <main>{children}</main>
             <Footer />
             <CartDrawer />
+            <Loader />
           </WishlistProvider>
         </CartProvider>
+        </LoaderProvider>
       </LenisScroll>
     </ViewTransitions>
 

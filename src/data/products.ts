@@ -18,6 +18,7 @@ export const products: Product[] = [
     image: `${IMG}/cutout/product_1.webp`,
     featured: FEATURED,
     colour: "Black",
+    colours: ["Black", "White", "Sand"],
     isNew: true,
     pairsWith: "painters-trouser",
     description:
@@ -46,6 +47,7 @@ export const products: Product[] = [
     image: `${IMG}/cutout/product_3.webp`,
     featured: FEATURED,
     colour: "Black",
+    colours: ["Black", "Navy"],
     pairsWith: "script-trim-tee",
     description:
       "Tapered jogger in brushed-back fleece with hand-drawn script panels along each leg, ribbed cuffs and contrast piped pockets.",
@@ -59,6 +61,7 @@ export const products: Product[] = [
     image: `${IMG}/cutout/product_4.webp`,
     featured: FEATURED,
     colour: "White",
+    colours: ["White", "Sand"],
     pairsWith: "painted-sleeve-tee",
     description:
       "Fluid straight-leg trouser in off-white twill, cut with painted side panels that move with every step.",
@@ -72,6 +75,7 @@ export const products: Product[] = [
     image: `${IMG}/cutout/product_5.webp`,
     featured: FEATURED,
     colour: "Black",
+    colours: ["Black", "White"],
     isNew: true,
     pairsWith: "panel-trouser",
     description:
@@ -86,6 +90,7 @@ export const products: Product[] = [
     image: `${IMG}/cutout/product_6.webp`,
     featured: FEATURED,
     colour: "White",
+    colours: ["White", "Black", "Navy"],
     pairsWith: "script-jogger",
     description:
       "Clean white tee with hand-drawn script trims at the collar and cuffs, cut in a relaxed fit from soft combed cotton.",
@@ -117,3 +122,14 @@ export const formatPrice = (price: number) => `$${price.toFixed(2)} USD`;
 export const getProduct = (id: string) => products.find((p) => p.id === id);
 
 export const getRelated = (id: string, count = 6) => products.filter((p) => p.id !== id).slice(0, count);
+
+// Swatch fill for each colour name (CSS background value)
+export const COLOUR_SWATCHES: Record<string, string> = {
+  Black: "#111111",
+  White: "#f4f2ec",
+  Sand: "#d8c7a5",
+  Navy: "#1f2a44",
+  Multicolour: "conic-gradient(#e0a458, #5b8fb9, #8bb174, #c8553d, #e0a458)",
+};
+
+export const getColours = (product: Product) => product.colours ?? [product.colour];

@@ -16,7 +16,8 @@ export interface Product {
   href: string;
   image: string; // packshot on hanger
   featured: string; // model shot
-  colour: string;
+  colour: string; // default colour
+  colours?: string[]; // every colour it comes in — falls back to [colour]
   description: string;
   isNew?: boolean;
   pairsWith?: string; // product id shown in "Complete the look"

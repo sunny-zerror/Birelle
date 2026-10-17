@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Link } from "next-view-transitions";
 import { RiAddLine, RiCheckLine } from "@remixicon/react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode } from "swiper/modules";
-import "swiper/css";
 import { formatPrice } from "@/data/products";
 import type { Product } from "@/types";
 import { useCart } from "@/components/providers/CartProvider";
+
+// 6 columns × 2 rows
+const GRID_COUNT = 12;
 
 const ProductRelated = ({ products }: { products: Product[] }) => {
   const { add } = useCart();
@@ -22,36 +22,30 @@ const ProductRelated = ({ products }: { products: Product[] }) => {
     window.setTimeout(() => setAdded((prev) => prev.filter((p) => p !== id)), 1800);
   };
 
+  // Repeats the list to fill both rows while the dummy catalogue is small
+  const items = products.length
+    ? Array.from({ length: GRID_COUNT }, (_, i) => products[i % products.length])
+    : [];
+
   return (
     <section id="pdp-related" className="pdp-related section overflow-hidden bg-white">
       <div className="container">
         <h2 className=" text-deep uppercase">You May Also Like</h2>
       </div>
 
-      <Swiper
-        className="mt-stack md:mt-16"
-        modules={[FreeMode]}
-        freeMode={{ enabled: true, momentumRatio: 0.6 }}
-        slidesPerView={1.6}
-        spaceBetween={16}
-        slidesOffsetBefore={16}
-        slidesOffsetAfter={16}
-        breakpoints={{
-          768: { slidesPerView: 5, spaceBetween: 32, slidesOffsetBefore: 56, slidesOffsetAfter: 56 },
-        }}
-      >
-        {products.map((p) => {
+      <ul className="container mt-stack grid grid-cols-2 gap-x-grid gap-y-10 md:mt-16 md:grid-cols-3 lg:grid-cols-6">
+        {items.map((p, i) => {
           const isAdded = added.includes(p.id);
           return (
-            <SwiperSlide key={p.id}>
+            <li key={`${p.id}-${i}`}>
               <article className="group text-center">
                 <Link href={p.href} aria-label={p.title} className="block">
-                  <div className="relative aspect-3/4 overflow-hidden bg-white">
+                  <div className="relative aspect-3/4 center overflow-hidden bg-white">
                     <img
                       src={p.image}
                       alt={p.title}
                       loading="lazy"
-                      className="cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                      className="w-[80%] transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                     />
                   </div>
                 </Link>
@@ -65,10 +59,10 @@ const ProductRelated = ({ products }: { products: Product[] }) => {
                   {isAdded ? <RiCheckLine size={16} /> : <RiAddLine size={16} />}
                 </button>
               </article>
-            </SwiperSlide>
+            </li>
           );
         })}
-      </Swiper>
+      </ul>
     </section>
   );
 };

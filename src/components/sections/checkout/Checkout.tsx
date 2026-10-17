@@ -185,7 +185,7 @@ const Checkout = () => {
           <p className="mt-4 max-w-[22rem] text-sm   text-muted">
             Your order is confirmed. A confirmation has been sent to {values.email}.
           </p>
-          <Button type="solid" href="/shop" className="mt-10">
+          <Button href="/shop" className="mt-10">
             Continue shopping
           </Button>
         </div>
@@ -199,7 +199,7 @@ const Checkout = () => {
         <div className="flex animate-panel-in flex-col items-center">
           <h1 className="primary-font text-2xl font-normal uppercase text-ink">Your bag is empty</h1>
           <p className="mt-3 text-sm text-muted">Add a piece or two before checking out.</p>
-          <Button type="solid" href="/shop" className="mt-10">
+          <Button href="/shop" className="mt-10">
             Shop the collection
           </Button>
         </div>

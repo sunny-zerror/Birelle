@@ -69,7 +69,7 @@ const CheckoutSummary = ({ lines, subtotal, expanded, onToggle, ref }: CheckoutS
                     </div>
                     <div className="min-w-0 flex-1 pt-1">
                       <p className="primary-font text-[0.9375rem] leading-snug text-ink">{line.product.title}</p>
-                      <p className="mt-1.5 text-xs text-muted">{line.size}</p>
+                      <p className="mt-1.5 text-xs text-muted">{line.colour} / {line.size}</p>
                     </div>
                     <p className="pt-1 text-sm tabular-nums text-ink">{money(line.product.price * line.qty)}</p>
                   </li>

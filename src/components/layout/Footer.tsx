@@ -36,17 +36,17 @@ const socials = [
 
 const Footer = () => {
   return (
-    <footer className="site-footer relative flex flex-col overflow-hidden bg-white text-ink md:block md:aspect-1440/941">
+    <footer className="site-footer relative flex h-dvh flex-col overflow-hidden text-ink md:block">
       {/* Painted garden scene — transparent sky leaves room for the links (mobile: below them) */}
       <img
-        src="/images/footer/footer_bg.svg"
+        src="/images/footer/footer_bg.png"
         alt=""
         aria-hidden="true"
         loading="lazy"
-        className="site-footer__art pointer-events-none order-last -mt-[15vw] block h-auto w-full md:absolute md:mt-0 md:inset-0 md:h-full"
+        className="site-footer__art pointer-events-none order-last -mt-[15vw] block min-h-0 w-full flex-1 object-cover object-bottom md:absolute md:inset-0 md:mt-0 md:h-full"
       />
 
-      <div className="site-footer__inner container relative z-10 pt-section md:px-[7vw] md:pt-[10vw]">
+      <div className="site-footer__inner container relative z-10 pt-section md:px-[7vw] ">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[16vw_16vw_14.5vw_auto] md:gap-0">
           {columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>

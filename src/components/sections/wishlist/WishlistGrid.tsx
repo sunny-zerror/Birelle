@@ -102,7 +102,7 @@ const WishlistGrid = () => {
               <p className="mt-2 max-w-[18rem] text-sm text-muted">
                 Tap the heart on any piece to save it here for later.
               </p>
-              <Button type="solid" href="/shop" className="mt-8">
+              <Button href="/shop" className="mt-8">
                 Shop the collection
               </Button>
             </div>
