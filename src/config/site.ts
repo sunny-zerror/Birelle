@@ -49,6 +49,13 @@ export const siteRoutes: SiteRoute[] = [
     priority: 0.9,
   },
   {
+    path: "/lookbook",
+    label: "Lookbook",
+    title: "Lookbook",
+    description: "Pick up a piece — an interactive lookbook of the Birelle Collection 2026.",
+    priority: 0.8,
+  },
+  {
     path: "/about",
     label: "About",
     title: "About",

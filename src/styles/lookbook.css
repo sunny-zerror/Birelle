@@ -1,0 +1,89 @@
+/* ---------- Lookbook cloth playground ------------------------------------- */
+
+.lookbook-world {
+  cursor: grab;
+}
+
+.lookbook-world.grabbing {
+  cursor: grabbing;
+}
+
+/* Title arrives once fonts are ready (it sets the floor) */
+.lookbook-hero__name {
+  visibility: hidden;
+}
+
+.lookbook-hero__name.ready {
+  visibility: visible;
+}
+
+.lookbook-hero__note {
+  transition: opacity 0.2s ease;
+}
+
+.is-dragging .lookbook-hero__note {
+  opacity: 0;
+}
+
+/* Drop box — frosted hairline panel, fills deep slate when ready */
+.lookbook-drop {
+  transform: translate(-50%, -50%) scale(0.96);
+  border: 1px solid rgb(17 17 17 / 0.15);
+  background: rgb(255 255 255 / 0.55);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  color: var(--color-ink);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.lookbook-drop.visible {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.lookbook-drop.ready {
+  border-color: var(--color-deep);
+  background: var(--color-deep);
+  color: #ffffff;
+}
+
+/* Pickup guide */
+.lookbook-guide__trail {
+  opacity: 0;
+  animation: lookbook-breeze 2.4s ease-in-out 2;
+}
+
+.lookbook-guide__hand {
+  offset-rotate: 0deg;
+  offset-anchor: 35% 10%;
+  opacity: 0;
+  animation: lookbook-pickup 2.4s cubic-bezier(0.35, 0, 0.3, 1) 2;
+}
+
+@keyframes lookbook-pickup {
+  0% { offset-distance: 0%; opacity: 0; transform: scale(1); }
+  12% { offset-distance: 0%; opacity: 0.55; transform: scale(1); }
+  22% { offset-distance: 0%; opacity: 0.65; transform: scale(0.93); }
+  75% { offset-distance: 100%; opacity: 0.45; transform: scale(0.93); }
+  90%, 100% { offset-distance: 100%; opacity: 0; transform: scale(1); }
+}
+
+@keyframes lookbook-breeze {
+  0%, 15%, 100% { opacity: 0; }
+  30%, 65% { opacity: 0.25; }
+  90% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lookbook-drop {
+    transition: none;
+  }
+}

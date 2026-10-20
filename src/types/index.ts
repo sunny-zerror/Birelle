@@ -22,3 +22,13 @@ export interface Product {
   isNew?: boolean;
   pairsWith?: string; // product id shown in "Complete the look"
 }
+
+export interface Look {
+  id: number;
+  title: string;
+  src: string; // full-size artwork (look view)
+  rain: string; // trimmed light texture (falling cloth)
+  category: string;
+  season: string;
+  story: string[];
+}
