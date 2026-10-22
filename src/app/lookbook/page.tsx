@@ -1,8 +1,15 @@
 import { LookbookHero } from "@/components/sections/lookbook";
+import JsonLd from "@/components/seo/JsonLd";
 import { createPageMetadata } from "@/lib/seo";
+import { breadcrumbSchema } from "@/lib/schema";
 
 const LookbookPage = () => {
-  return <LookbookHero />;
+  return (
+    <>
+      <JsonLd data={breadcrumbSchema([{ name: "Lookbook", path: "/lookbook" }])} />
+      <LookbookHero />
+    </>
+  );
 };
 
 export default LookbookPage;

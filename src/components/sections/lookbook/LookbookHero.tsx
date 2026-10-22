@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
+import { useTransitionRouter } from "next-view-transitions";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { RiRefreshLine } from "@remixicon/react";
@@ -16,6 +17,8 @@ gsap.registerPlugin(useGSAP);
 
 const RAIN_ORDER = looks.map((_, i) => i);
 const HINT_MS = 4800;
+const NOTE_TEXT = "Pick up a piece to view the full look";
+const DROP_PAD = 40; // px of forgiveness around the note when dropping
 
 type Dialog =
   | { type: "look"; index: number; origin: "playground" | "collection" }
@@ -25,16 +28,16 @@ type Dialog =
 type Hint = { shown: boolean; interacted: boolean; lastCheck: number; timer: number; reduced: boolean };
 
 // Interactive cloth lookbook — garments rain onto the title, get picked up and
-// dropped on the box to open that look
+// dropped on the note to open that look's page
 const LookbookHero = () => {
   const { isLoaded } = useLoader();
+  const router = useTransitionRouter();
 
   const stageRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLHeadingElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
-  const dropActionRef = useRef<HTMLSpanElement>(null);
-  const dropTitleRef = useRef<HTMLSpanElement>(null);
+  const dropActionRef = useRef<HTMLParagraphElement>(null);
   const guideRef = useRef<HTMLDivElement>(null);
 
   const playground = useRef<Playground | null>(null);
@@ -51,6 +54,7 @@ const LookbookHero = () => {
   const hideDrop = () => {
     dropRef.current?.classList.remove("visible", "ready");
     stageRef.current?.classList.remove("is-dragging");
+    if (dropActionRef.current) dropActionRef.current.textContent = NOTE_TEXT;
   };
 
   const hideHint = () => {
@@ -173,7 +177,12 @@ const LookbookHero = () => {
   const overDrop = (p: { x: number; y: number }) => {
     const r = dropRef.current!.getBoundingClientRect();
     const c = worldRef.current!.getBoundingClientRect();
-    return p.x >= r.left - c.left && p.x <= r.right - c.left && p.y >= r.top - c.top && p.y <= r.bottom - c.top;
+    return (
+      p.x >= r.left - c.left - DROP_PAD &&
+      p.x <= r.right - c.left + DROP_PAD &&
+      p.y >= r.top - c.top - DROP_PAD &&
+      p.y <= r.bottom - c.top + DROP_PAD
+    );
   };
 
   const updateDrop = (p: { x: number; y: number }) => {
@@ -200,7 +209,6 @@ const LookbookHero = () => {
     if (!fabric) return;
     worldRef.current!.setPointerCapture(e.pointerId);
     worldRef.current!.classList.add("grabbing");
-    dropTitleRef.current!.textContent = looks[fabric.index].title;
     dropRef.current!.classList.add("visible");
     stageRef.current!.classList.add("is-dragging");
     updateDrop(p);
@@ -225,7 +233,7 @@ const LookbookHero = () => {
     const index = pg.grab && pointerStart.current?.moved && overDrop(p) ? pg.grab.fabric.index : null;
     release();
     pointerStart.current = null;
-    if (index !== null) openLook(index);
+    if (index !== null) router.push(`/lookbook/${looks[index].slug}`);
   };
 
   const onPointerCancel = () => {
@@ -307,29 +315,16 @@ const LookbookHero = () => {
         >
 
 
-          {/* Instruction + replay */}
-          <div className="lookbook-hero__note lookbook-hero__reveal pointer-events-none absolute left-1/2 top-[30%] z-4 flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 items-center gap-3 text-sm max-md:top-[40%]">
-            <button
-              type="button"
-              onClick={rain}
-              aria-label="Replay falling garments"
-              className="pointer-events-auto center size-11 text-deep transition-opacity hover:opacity-60"
-            >
-              <RiRefreshLine size={22} />
-            </button>
-            <p>Pick up a piece to view the full look.</p>
-          </div>
-
-          {/* Drop box — appears while a garment is held */}
+          {/* Instruction + replay — doubles as the drop target while a garment is held */}
           <div
             ref={dropRef}
-            aria-hidden="true"
-            className="lookbook-drop pointer-events-none absolute rounded-md left-1/2 top-[30%] z-10 flex h-[10.5rem] w-[17.5rem] flex-col items-center justify-center gap-2 text-center max-md:top-[40%] max-md:h-36 max-md:w-56"
+            className="lookbook-hero__note lookbook-hero__reveal pointer-events-none absolute left-1/2 top-[30%] z-4 flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 text-center max-md:top-[40%]"
           >
-            <span ref={dropActionRef} className="text-eyebrow">
-              Drop here to view look
-            </span>
-            <span ref={dropTitleRef} className="primary-font text-xl" />
+            <div className="flex items-center gap-4">
+              <p ref={dropActionRef} aria-live="polite" className="lookbook-hero__action primary-font text-lg leading-tight text-deep max-md:text-base">
+                {NOTE_TEXT}
+              </p>
+            </div>
           </div>
 
           {/* Title — the floor the garments land on */}

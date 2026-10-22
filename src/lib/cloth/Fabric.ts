@@ -17,10 +17,14 @@ import type { Bounds, Grab, GarmentAsset, Grip } from "./types";
 
 export const OBLIQUE = 0.55;
 const GRAVITY = 0.28; // px per frame² (fixed 60 Hz step)
-const MAX_SPEED = 12; // px per frame
-const K_STRUCT = 0.94;
-const K_SHEAR = 0.52;
-const K_BEND = 0.09;
+const MAX_SPEED = 16; // px per frame — safety net only
+const AIR_DRAG = 0.988;
+const REST_DRAG = 0.9; // extra damping once a piece lies on the floor
+const K_STRUCT = 1;
+const K_SHEAR = 0.6;
+const K_BEND = 0.14;
+const STATIC_FRICTION = 0.35; // px — slower slides than this stop dead on the floor
+const KINETIC_FRICTION = 0.55;
 
 interface FabricOptions {
   /** garment / look index */
@@ -153,10 +157,12 @@ export default class Fabric {
     this.lb = Int32Array.from(lb);
     this.lk = Float32Array.from(lk);
     this.rest = new Float32Array(la.length);
+    // rest lengths come from the flat artwork (not the rippled spawn shape), so a
+    // piece can lie flat without buckling and the print never stretches
     for (let j = 0; j < la.length; j++) {
       const a = la[j];
       const b = lb[j];
-      this.rest[j] = Math.hypot(this.x[b] - this.x[a], this.y[b] - this.y[a], this.z[b] - this.z[a]);
+      this.rest[j] = Math.hypot((this.u[b] - this.u[a]) * this.w, (this.v[b] - this.v[a]) * this.h);
     }
     this.triangles = Uint32Array.from(tris);
   }
@@ -202,10 +208,12 @@ export default class Fabric {
     if (this.sleeping) return;
     const { x, y, z, px, py, pz, u, v, contact } = this;
     const calmAir = reduced || this.landedFrames > 0;
+    // drag ramps up the longer a piece has been down, so it eases to rest instead of popping still
+    const drag = this.landedFrames ? AIR_DRAG - (AIR_DRAG - REST_DRAG) * Math.min(1, this.landedFrames / 90) : AIR_DRAG;
     for (let i = 0; i < this.n; i++) {
-      let vx = (x[i] - px[i]) * 0.985;
-      let vy = (y[i] - py[i]) * 0.986;
-      let vz = (z[i] - pz[i]) * 0.978;
+      let vx = (x[i] - px[i]) * drag;
+      let vy = (y[i] - py[i]) * drag;
+      let vz = (z[i] - pz[i]) * drag;
       const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
       if (speed > MAX_SPEED) {
         const s = MAX_SPEED / speed;
@@ -218,9 +226,9 @@ export default class Fabric {
       pz[i] = z[i];
       // a light breeze while airborne makes each piece drift and flutter
       const airborne = !calmAir && !contact[i];
-      x[i] += vx + (airborne ? Math.sin(time * 1.1 + this.index * 1.7 + v[i] * 3) * 0.022 : 0);
+      x[i] += vx + (airborne ? Math.sin(time * 0.9 + this.index * 1.7 + v[i] * 2) * 0.016 : 0);
       y[i] += vy + GRAVITY;
-      z[i] += vz + (airborne ? Math.sin(time * 2.2 + u[i] * 4.8 + v[i] * 2 + this.index) * 0.038 : 0);
+      z[i] += vz + (airborne ? Math.sin(time * 1.6 + u[i] * 3 + v[i] * 1.5 + this.index) * 0.026 : 0);
       contact[i] = 0;
     }
     this.version++;
@@ -250,20 +258,22 @@ export default class Fabric {
       this.x[i] = grab.x + o.x;
       this.z[i] = o.z;
       this.y[i] = grab.y + o.y - o.z * OBLIQUE;
-      this.px[i] = this.x[i];
-      this.py[i] = this.y[i];
-      this.pz[i] = this.z[i];
     }
   }
 
-  solve(surface: number, viewW: number, grab: Grab | null) {
+  solve(surface: number, viewW: number, grab: Grab | null, pass = 0) {
     if (this.sleeping) return;
     const { x, y, z, px, py, pz, la, lb, lk, rest } = this;
     const held = grab?.fabric === this ? grab : null;
     const pins = held ? held.grip.pins : null;
     if (held) this.pinGrip(held);
 
-    for (let j = 0; j < la.length; j++) {
+    // sweep the links forward then backward on alternate passes so the solver
+    // has no directional bias (one-way sweeps make cloth drift and skew)
+    const count = la.length;
+    const reverse = pass & 1;
+    for (let k = 0; k < count; k++) {
+      const j = reverse ? count - 1 - k : k;
       const a = la[j];
       const b = lb[j];
       const dx = x[b] - x[a];
@@ -329,8 +339,16 @@ export default class Fabric {
       if (y[i] > floor) {
         y[i] = floor;
         py[i] = floor;
-        px[i] = x[i] + (px[i] - x[i]) * 0.5; // floor friction
-        pz[i] = z[i] + (pz[i] - z[i]) * 0.6;
+        // floor friction: slow slides stick, faster ones drag
+        const sx = x[i] - px[i];
+        const sz = z[i] - pz[i];
+        if (Math.abs(sx) + Math.abs(sz) < STATIC_FRICTION) {
+          px[i] = x[i];
+          pz[i] = z[i];
+        } else {
+          px[i] = x[i] - sx * KINETIC_FRICTION;
+          pz[i] = z[i] - sz * KINETIC_FRICTION;
+        }
         this.contact[i] = 1;
       }
     }
@@ -347,10 +365,10 @@ export default class Fabric {
       if (this.contact[i] && this.solid[i]) touching++;
     }
     if (touching) this.landedFrames++;
-    if (this.landedFrames && motion / this.n < 0.12) this.calm++;
+    if (this.landedFrames && motion / this.n < 0.06) this.calm++;
     else this.calm = 0;
     // garments on the floor freeze once settled; picking one up wakes it
-    if (this.calm > 25 || this.landedFrames > 100) {
+    if (this.calm > 20 || this.landedFrames > 240) {
       this.sleeping = true;
       this.px.set(this.x);
       this.py.set(this.y);

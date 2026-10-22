@@ -1,0 +1,5 @@
+import { LookSkeleton } from "@/components/skeletons";
+
+export default function Loading() {
+  return <LookSkeleton />;
+}

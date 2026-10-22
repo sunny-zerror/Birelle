@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { RiEqualizerLine } from "@remixicon/react";
 import { categories, formatPrice, products } from "@/data/products";
 import type { Product } from "@/types";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(Flip, ScrollTrigger, useGSAP);
 
@@ -132,7 +133,7 @@ const PlpGrid = () => {
         {/* Toolbar */}
         <div className="plp-toolbar flex flex-col gap-6 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center">
           <div className="flex items-baseline gap-3">
-            <h2 className="primary-font  uppercase text-ink ">Collection <br /> 2026</h2>
+            <h1 className="h2 primary-font font-normal uppercase text-ink">Collection <br /> 2026</h1>
           </div>
 
           <div
@@ -262,14 +263,14 @@ const PlpGrid = () => {
                 className={`plp-card ${shown ? "" : "hidden"}`}
               >
                 <Link href={product.href} className="group block">
-                  <div className="relative aspect-3/4 center overflow-hidden">
+                  <ImageSkeleton className="relative aspect-3/4 center overflow-hidden">
                     <img
                       src={product.image}
                       alt={product.title}
                       loading="lazy"
                       className={`w-[80%] transition-transform duration-1000 ${ease} group-hover:scale-105`}
                     />
-                  </div>
+                  </ImageSkeleton>
                   <div className="mt-4 text-center">
                     <h2 className="secondary-font text-xs uppercase tracking-wide text-ink">
                       <span className="bg-[linear-gradient(currentColor,currentColor)] bg-size-[0%_1px] bg-left-bottom bg-no-repeat pb-0.5 transition-[background-size] duration-500 group-hover:bg-size-[100%_1px]">

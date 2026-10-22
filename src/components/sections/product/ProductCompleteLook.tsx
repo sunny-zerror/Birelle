@@ -1,6 +1,7 @@
 import { Link } from "next-view-transitions";
 import { formatPrice } from "@/data/products";
 import type { Product } from "@/types";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 type Props = {
   product: Product;
@@ -15,14 +16,14 @@ const ProductCompleteLook = ({ product, pair }: Props) => {
         <h6 className="primary-font  font-normal uppercase  text-deep">Complete the Look</h6>
 
         <Link href={pair.href} className="group mt-8 block w-full max-w-60 md:max-w-xs">
-          <div className="relative aspect-3/4 overflow-hidden bg-white">
+          <ImageSkeleton className="relative aspect-3/4 overflow-hidden bg-white">
             <img
               src={pair.image}
               alt={pair.title}
               loading="lazy"
               className="cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
             />
-          </div>
+          </ImageSkeleton>
           <h3 className="secondary-font mt-4 text-sm uppercase text-ink">
             <span className="bg-[linear-gradient(currentColor,currentColor)] bg-size-[0%_1px] bg-left-bottom bg-no-repeat pb-0.5 transition-[background-size] duration-500 group-hover:bg-size-[100%_1px]">
               {pair.title}

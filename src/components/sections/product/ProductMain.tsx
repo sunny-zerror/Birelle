@@ -7,6 +7,7 @@ import { useGSAP } from "@gsap/react";
 import { RiArrowLeftSLine, RiCheckLine, RiHeartFill, RiHeartLine, RiShareForwardLine } from "@remixicon/react";
 import { COLOUR_SWATCHES, SIZES, formatPrice, getColours } from "@/data/products";
 import type { Product } from "@/types";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/components/providers/CartProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 
@@ -76,7 +77,7 @@ const ProductMain = ({ product }: { product: Product }) => {
       {/* Gallery — scrolls past while the info column stays put */}
       <div className="pdp-gallery flex flex-col gap-1 bg-[#F7F7F7]">
         {[product.image, product.featured].map((src, i) => (
-          <div key={src} className="pdp-gallery__item relative flex aspect-3/4 items-center justify-center overflow-hidden md:aspect-auto md:h-screen">
+          <ImageSkeleton key={src} className="pdp-gallery__item relative flex aspect-3/4 items-center justify-center overflow-hidden md:aspect-auto md:h-screen">
             <img
               src={src}
               alt={i === 0 ? product.title : `${product.title} styled on model`}
@@ -85,7 +86,7 @@ const ProductMain = ({ product }: { product: Product }) => {
               fetchPriority={i === 0 ? "high" : undefined}
               loading={i === 0 ? undefined : "lazy"}
             />
-          </div>
+          </ImageSkeleton>
         ))}
       </div>
 

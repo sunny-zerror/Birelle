@@ -8,7 +8,8 @@ import type { GarmentAsset, Grab } from "./types";
 
 const STEP_MS = 1000 / 60;
 const RAIN_MS = 2000; // all garments arrive within this window
-const SOLVER_ITERATIONS = 5;
+const SOLVER_ITERATIONS = 8;
+const HAND_FOLLOW = 0.45; // how quickly the held patch catches up with the pointer (per step)
 
 export default class Playground {
   readonly reduced: boolean;
@@ -108,11 +109,12 @@ export default class Playground {
     this.time += 1 / 60;
     const { grab, fabrics } = this;
     if (grab) {
-      grab.x = grab.targetX;
-      grab.y = grab.targetY;
+      // ease the hand toward the pointer so fast flicks don't yank the cloth
+      grab.x += (grab.targetX - grab.x) * HAND_FOLLOW;
+      grab.y += (grab.targetY - grab.y) * HAND_FOLLOW;
     }
     for (const f of fabrics) f.integrate(this.time, this.reduced);
-    for (let i = 0; i < SOLVER_ITERATIONS; i++) for (const f of fabrics) f.solve(this.surface, this.W, grab);
+    for (let i = 0; i < SOLVER_ITERATIONS; i++) for (const f of fabrics) f.solve(this.surface, this.W, grab, i);
     for (const f of fabrics) f.settle(grab);
   }
 

@@ -8,6 +8,7 @@ import { Checkbox, RadioGroup, SelectField, TextField } from "@/components/ui/fo
 import { useCart } from "@/components/providers/CartProvider";
 import { useHydrated } from "@/hooks/useHydrated";
 import CheckoutSummary from "./CheckoutSummary";
+import { CheckoutSkeleton } from "@/components/skeletons";
 
 const COUNTRIES = [
   "India",
@@ -174,7 +175,7 @@ const Checkout = () => {
   ];
 
   // Wait for the stored cart before choosing between the form and the empty state
-  if (!hydrated) return <section className="min-h-screen bg-white" />;
+  if (!hydrated) return <CheckoutSkeleton />;
 
   if (orderNumber) {
     return (

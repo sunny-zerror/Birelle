@@ -21,38 +21,46 @@
   transition: opacity 0.2s ease;
 }
 
-.is-dragging .lookbook-hero__note {
-  opacity: 0;
+/* While a garment is held the note becomes the drop target — only its text changes */
+.lookbook-hero__action {
+  transition: color 0.3s ease;
 }
 
-/* Drop box — frosted hairline panel, fills deep slate when ready */
-.lookbook-drop {
-  transform: translate(-50%, -50%) scale(0.96);
-  border: 1px solid rgb(17 17 17 / 0.15);
-  background: rgb(255 255 255 / 0.55);
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  color: var(--color-ink);
-  opacity: 0;
-  visibility: hidden;
+.lookbook-hero__note.ready .lookbook-hero__action {
+  color: var(--color-accent);
+}
+
+/* Replay — hairline ring that fills slate, icon turns back on hover */
+.lookbook-replay {
+  border: 1px solid rgb(50 75 85 / 0.22);
+  background: rgb(255 255 255 / 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition:
-    opacity 0.2s ease,
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease;
+    background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.lookbook-drop.visible {
-  visibility: visible;
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+.lookbook-replay__icon {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.lookbook-drop.ready {
+.lookbook-replay:hover,
+.lookbook-replay:focus-visible {
   border-color: var(--color-deep);
   background: var(--color-deep);
   color: #ffffff;
+}
+
+.lookbook-replay:hover .lookbook-replay__icon,
+.lookbook-replay:focus-visible .lookbook-replay__icon {
+  transform: rotate(-180deg);
+}
+
+.lookbook-replay:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 /* Pickup guide */
@@ -83,7 +91,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lookbook-drop {
+  .lookbook-replay,
+  .lookbook-replay__icon {
     transition: none;
+    animation: none !important;
   }
 }

@@ -9,6 +9,7 @@ import { useWishlist } from "@/components/providers/WishlistProvider";
 import { SIZES, formatPrice } from "@/data/products";
 import type { Product } from "@/types";
 import { useHydrated } from "@/hooks/useHydrated";
+import { ImageSkeleton, LoadingLabel, ProductCardSkeleton } from "@/components/ui/skeleton";
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
@@ -34,14 +35,14 @@ const WishlistCard = ({ product, index }: { product: Product; index: number }) =
       </button>
 
       <Link href={product.href} className="block w-full">
-        <div className="relative center aspect-3/4 overflow-hidden">
+        <ImageSkeleton className="relative center aspect-3/4 overflow-hidden">
           <img
             src={product.image}
             alt={product.title}
             loading="lazy"
             className={`w-[80%] transition-transform duration-1000 ${ease} group-hover:scale-105`}
           />
-        </div>
+        </ImageSkeleton>
         <div className="mt-4 text-center">
           <h2 className="secondary-font text-xs uppercase tracking-wide text-ink">{product.title}</h2>
           <p className="mt-1.5 text-xs text-ink">{formatPrice(product.price)}</p>
@@ -89,6 +90,14 @@ const WishlistGrid = () => {
       <div className="container">
         <h1 className="primary-font text-center text-3xl font-normal uppercase text-ink md:text-4xl">Wishlist</h1>
 
+        {!hydrated && (
+          <ul className="mt-stack grid grid-cols-2 gap-x-4 gap-y-12 md:mt-16 md:grid-cols-4 md:gap-x-8 md:gap-y-20">
+            <LoadingLabel>Loading your wishlist</LoadingLabel>
+            {Array.from({ length: 4 }, (_, i) => (
+              <ProductCardSkeleton key={i} action />
+            ))}
+          </ul>
+        )}
         {hydrated &&
           (items.length > 0 ? (
             <ul className="wishlist__list mt-stack grid grid-cols-2 gap-x-4 gap-y-12 md:mt-16 md:grid-cols-4 md:gap-x-8 md:gap-y-20">

@@ -23,12 +23,20 @@ export interface Product {
   pairsWith?: string; // product id shown in "Complete the look"
 }
 
+export interface LookPhoto {
+  src: string;
+  width: number;
+  height: number;
+}
+
 export interface Look {
   id: number;
+  slug: string; // /lookbook/[slug]
   title: string;
   src: string; // full-size artwork (look view)
   rain: string; // trimmed light texture (falling cloth)
   category: string;
   season: string;
   story: string[];
+  photos: LookPhoto[]; // editorial photography on the look page
 }

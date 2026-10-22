@@ -5,6 +5,7 @@ import { Link } from "next-view-transitions";
 import { RiAddLine, RiCheckLine } from "@remixicon/react";
 import { formatPrice } from "@/data/products";
 import type { Product } from "@/types";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/components/providers/CartProvider";
 
 // 6 columns × 2 rows
@@ -40,14 +41,14 @@ const ProductRelated = ({ products }: { products: Product[] }) => {
             <li key={`${p.id}-${i}`}>
               <article className="group text-center">
                 <Link href={p.href} aria-label={p.title} className="block">
-                  <div className="relative aspect-3/4 center overflow-hidden bg-white">
+                  <ImageSkeleton className="relative aspect-3/4 center overflow-hidden bg-white">
                     <img
                       src={p.image}
                       alt={p.title}
                       loading="lazy"
                       className="w-[80%] transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                     />
-                  </div>
+                  </ImageSkeleton>
                 </Link>
                 <p className="mt-4 text-base text-ink">{formatPrice(p.price)}</p>
                 <button

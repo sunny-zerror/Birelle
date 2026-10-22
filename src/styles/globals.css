@@ -146,3 +146,53 @@ button {
   object-fit: cover;
 }
 
+
+/* ---------- Skeleton loading --------------------------------------------- */
+/* Warm paper block with a slow light sweep — same off-white family as the gallery (#F7F7F7) */
+.skeleton {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background-color: #f2f1ee;
+}
+
+.skeleton::after,
+.img-skeleton:not([data-loaded])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.65) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Image placeholder: the sweep sits behind the picture until it has loaded */
+.img-skeleton {
+  isolation: isolate;
+}
+
+.img-skeleton:not([data-loaded]) {
+  background-color: #f2f1ee;
+}
+
+.img-skeleton:not([data-loaded])::before {
+  z-index: -1;
+}
+
+.img-skeleton img {
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after,
+  .img-skeleton:not([data-loaded])::before {
+    animation: none;
+    opacity: 0;
+  }
+}
