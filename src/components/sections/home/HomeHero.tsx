@@ -74,7 +74,9 @@ const HomeHero = () => {
         )
         .to(video ?? [], { scale: 1, duration: 1.6, ease: "power3.inOut" }, "<")
         // Wordmark fades in once the clip has opened past it
-        .to(wordmark, { autoAlpha: 1, duration: 0.8, ease: "power2.out" }, "-=0.5");
+        // fromTo, not to: on a client-side route change (loader already done) or after the !isLoaded set is
+        // reverted, the wordmark is already at full opacity, so a plain .to(1) would have nothing to animate
+        .fromTo(wordmark, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8, ease: "power2.out" }, "-=0.5");
     },
     { scope: sectionRef, dependencies: [isLoaded] },
   );
@@ -145,7 +147,7 @@ const HomeHero = () => {
       </div>
 
       {/* Wordmark — fixed above the header so it can dock into the logo slot; the header hides its own logo on this page */}
-      <div ref={wordmarkRef} aria-hidden="true" className="home-hero__wordmark pointer-events-none fixed inset-x-0 top-0 z-51">
+      <div ref={wordmarkRef} aria-hidden="true" className="home-hero__wordmark pointer-events-none fixed inset-x-0 top-0 z-51" style={{ opacity: 0, visibility: "hidden" }}>
         <div className="container pt-header">
           <img src="/logo.svg" alt="" width={1307} height={127} className="block h-auto w-full" />
         </div>

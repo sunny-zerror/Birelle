@@ -10,6 +10,8 @@ type TextFieldProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChang
   /** line = underline only (form fields), box = full border (discount code) */
   variant?: "line" | "box";
   optional?: boolean;
+  /** Trailing control inside the field (e.g. a show-password toggle) */
+  suffix?: React.ReactNode;
 };
 
 const variants = {
@@ -25,6 +27,7 @@ const TextField = ({
   error,
   variant = "line",
   optional = false,
+  suffix,
   className = "",
   id,
   ...input
@@ -46,7 +49,7 @@ const TextField = ({
           aria-describedby={error ? errorId : undefined}
           className={`peer h-12 w-full rounded-none bg-transparent pt-4 text-sm text-ink outline-none transition-colors duration-300 ${
             variants[variant]
-          } ${error ? "border-danger! " : ""}`}
+          } ${suffix ? "pr-10" : ""} ${error ? "border-danger! " : ""}`}
         />
         <label
           htmlFor={fieldId}
@@ -56,7 +59,8 @@ const TextField = ({
         >
           {label}
           {optional && <span className="text-muted/80"> (optional)</span>}
-      </label>
+        </label>
+        {suffix && <div className="absolute bottom-0 right-0 top-4 flex items-center">{suffix}</div>}
       </div>
       {error && (
         <p id={errorId} role="alert" className="mt-1.5 text-xs text-danger">

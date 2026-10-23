@@ -2,8 +2,9 @@ import type { Product } from "@/types";
 
 const IMG = "/images/homepage/curated";
 
-// Shared model shot until each product has its own featured image
-const FEATURED = `${IMG}/featured_img.svg`;
+// On-model shots for each product, from the lookbook and Seen On You shoots
+const LOOKBOOK = "/images/lookbook/photos";
+const SEEN = "/images/homepage/seen_on_you";
 
 export const SIZES = ["XS", "S", "M", "L", "XL"];
 
@@ -16,7 +17,7 @@ export const products: Product[] = [
     price: 185,
     href: "/shop/signature-tee",
     image: `${IMG}/cutout/product_1.webp`,
-    featured: FEATURED,
+    featured: `${LOOKBOOK}/DSC03822.webp`,
     colour: "Black",
     colours: ["Black", "White", "Sand"],
     isNew: true,
@@ -31,7 +32,7 @@ export const products: Product[] = [
     price: 245,
     href: "/shop/painters-trouser",
     image: `${IMG}/cutout/product_2.webp`,
-    featured: FEATURED,
+    featured: `${SEEN}/img4.jpeg`,
     colour: "Multicolour",
     isNew: true,
     pairsWith: "signature-tee",
@@ -45,7 +46,7 @@ export const products: Product[] = [
     price: 210,
     href: "/shop/script-jogger",
     image: `${IMG}/cutout/product_3.webp`,
-    featured: FEATURED,
+    featured: `${LOOKBOOK}/DSC03760.webp`,
     colour: "Black",
     colours: ["Black", "Navy"],
     pairsWith: "script-trim-tee",
@@ -59,7 +60,7 @@ export const products: Product[] = [
     price: 225,
     href: "/shop/panel-trouser",
     image: `${IMG}/cutout/product_4.webp`,
-    featured: FEATURED,
+    featured: `${SEEN}/img2.jpeg`,
     colour: "White",
     colours: ["White", "Sand"],
     pairsWith: "painted-sleeve-tee",
@@ -73,7 +74,7 @@ export const products: Product[] = [
     price: 165,
     href: "/shop/painted-sleeve-tee",
     image: `${IMG}/cutout/product_5.webp`,
-    featured: FEATURED,
+    featured: `${SEEN}/img1.jpeg`,
     colour: "Black",
     colours: ["Black", "White"],
     isNew: true,
@@ -88,7 +89,7 @@ export const products: Product[] = [
     price: 155,
     href: "/shop/script-trim-tee",
     image: `${IMG}/cutout/product_6.webp`,
-    featured: FEATURED,
+    featured: `${LOOKBOOK}/DSC03676.webp`,
     colour: "White",
     colours: ["White", "Black", "Navy"],
     pairsWith: "script-jogger",
@@ -102,7 +103,7 @@ export const products: Product[] = [
     price: 175,
     href: "/shop/tide-short",
     image: `${IMG}/cutout/product_7.webp`,
-    featured: FEATURED,
+    featured: `${LOOKBOOK}/DSC03207.webp`,
     colour: "Multicolour",
     pairsWith: "signature-tee",
     description:

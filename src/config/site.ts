@@ -26,9 +26,13 @@ export const siteConfig = {
     "Collection 2026",
     "luxury menswear",
   ],
+  // Fill these in — they appear on /contact and in the Organization structured data.
+  // Empty values are hidden on the live site (in development they show as a dashed hint).
   contact: {
-    phone: "",
+    phone: "", // international format, e.g. "+91 22 0000 0000"
     email: "",
+    whatsapp: "", // digits with country code, e.g. "919800000000"
+    hours: "", // e.g. "Monday to Saturday, 10:00 – 19:00 IST"
   },
   address: {
     street: "",
@@ -75,6 +79,43 @@ export const siteRoutes: SiteRoute[] = [
     description:
       "Pick up a piece in the interactive Birelle lookbook and explore every look from the Collection 2026, styled and photographed.",
     priority: 0.8,
+  },
+  {
+    path: "/contact",
+    label: "Contact",
+    title: "Contact Us — Client Services",
+    description:
+      "Questions about an order, sizing, delivery or returns? Contact Birelle Client Services by phone, email or WhatsApp, or send us a message.",
+    priority: 0.5,
+  },
+  {
+    path: "/faq",
+    label: "FAQ",
+    title: "FAQ — Orders, Delivery, Returns & Sizing",
+    description:
+      "Answers to common questions about ordering from Birelle: payment, delivery times, free shipping, returns and exchanges, sizing, and caring for printed pieces.",
+    priority: 0.5,
+  },
+  {
+    path: "/privacy-policy",
+    label: "Privacy Policy",
+    title: "Privacy Policy",
+    description: "How Birelle collects, uses and protects your personal information when you shop with us.",
+    priority: 0.2,
+  },
+  {
+    path: "/terms",
+    label: "Terms and Conditions",
+    title: "Terms and Conditions",
+    description: "The terms that apply to browsing and buying from the Birelle online store — orders, payment, delivery and returns.",
+    priority: 0.2,
+  },
+  {
+    path: "/cookie-policy",
+    label: "Cookie Policy",
+    title: "Cookie Policy",
+    description: "What Birelle stores in your browser, why, and how you can control it.",
+    priority: 0.2,
   },
   {
     path: "/about",

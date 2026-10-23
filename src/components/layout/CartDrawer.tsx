@@ -97,7 +97,7 @@ const CartDrawer = () => {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain px-6 pb-10 pt-6 md:px-8">
+        <div data-lenis-prevent className="flex flex-1 flex-col overflow-y-auto *:shrink-0 overscroll-contain px-6 pb-10 pt-6 md:px-8">
           {/* Head */}
           <div className="flex items-start justify-between">
             <div>
@@ -196,9 +196,9 @@ const CartDrawer = () => {
             </ul>
           )}
 
-          {/* Suggestions */}
+          {/* Suggestions — pinned to the bottom of an empty cart, otherwise they follow the items */}
           {suggestions.length > 0 && (
-            <div className="mt-6">
+            <div className={lines.length === 0 ? "mt-auto pt-6" : "mt-6"}>
               <h3 className="secondary-font text-base font-medium text-ink">You may also like</h3>
               <ul className="scroller_none  mt-6 flex snap-x gap-8 overflow-x-auto px-6  md:px-8">
                 {suggestions.map((p) => (

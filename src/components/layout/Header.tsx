@@ -8,6 +8,7 @@ import {
   RiHeartFill,
   RiHeartLine,
   RiSearchLine,
+  RiUserFill,
   RiUserLine,
 } from "@remixicon/react";
 import { siteConfig } from "@/config/site";
@@ -15,8 +16,7 @@ import { useCart } from "@/components/providers/CartProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import MenuDrawer from "@/components/layout/MenuDrawer";
 import SearchOverlay from "@/components/layout/SearchOverlay";
-
-const actions = [{ label: "Account", href: "/account", Icon: RiUserLine }];
+import { useAuth } from "@/components/providers/AuthProvider";
 
 const iconClass = "center size-8 transition-opacity hover:opacity-60";
 
@@ -34,6 +34,7 @@ const Header = () => {
   const { count: wishlistCount } = useWishlist();
   const [panel, setPanel] = useState<"menu" | "search" | null>(null);
   const closePanel = useCallback(() => setPanel(null), []);
+  const { user, requireAuth } = useAuth();
 
   const tone = transparentRoutes[pathname];
   const isSolid = !tone || isScrolled;
@@ -105,7 +106,8 @@ const Header = () => {
         <nav aria-label="Account" className="site-header__right flex items-center justify-self-end gap-1 md:gap-3">
           {/* Heart fills in once something is saved */}
           <Link
-            href="/wishlist"
+            href="/account/wishlist"
+            onClick={requireAuth("/account/wishlist")}
             aria-label={`Wishlist, ${wishlistCount} ${wishlistCount === 1 ? "item" : "items"}`}
             className={iconClass}
           >
@@ -115,11 +117,15 @@ const Header = () => {
               <RiHeartLine size={16} />
             )}
           </Link>
-          {actions.map(({ label, href, Icon }) => (
-            <Link key={label} href={href} aria-label={label} className={iconClass}>
-              <Icon size={16} />
-            </Link>
-          ))}
+          {/* Signed in: straight to the dashboard (filled icon). Signed out: the sign-in drawer */}
+          <Link
+            href="/account"
+            onClick={requireAuth("/account")}
+            aria-label={user ? `My account, signed in as ${user.firstName}` : "Sign in"}
+            className={iconClass}
+          >
+            {user ? <RiUserFill size={16} className="animate-panel-in" /> : <RiUserLine size={16} />}
+          </Link>
           <button
             type="button"
             aria-label={`Open cart, ${count} ${count === 1 ? "item" : "items"}`}

@@ -9,29 +9,19 @@ import { useCart } from "@/components/providers/CartProvider";
 import { useHydrated } from "@/hooks/useHydrated";
 import CheckoutSummary from "./CheckoutSummary";
 import { CheckoutSkeleton } from "@/components/skeletons";
-
-const COUNTRIES = [
-  "India",
-  "United States",
-  "United Kingdom",
-  "Canada",
-  "Australia",
-  "United Arab Emirates",
-  "Singapore",
-  "France",
-  "Germany",
-  "Italy",
-  "Spain",
-  "Netherlands",
-  "Japan",
-];
+import { SHIPPING_COUNTRIES } from "@/data/shipping";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useAddresses } from "@/hooks/useAddresses";
+import { useOrders } from "@/hooks/useOrders";
+import { formatPhone } from "@/lib/countries";
+import type { Order } from "@/types";
 
 const EXPRESS = ["Shop Pay", "PayPal", "G Pay"];
 
 const POLICIES = [
-  { label: "Refund Policy", href: "/policies/refund" },
-  { label: "Privacy Policy", href: "/policies/privacy" },
-  { label: "Terms Of Service", href: "/policies/terms" },
+  { label: "Refund Policy", href: "/faq#returns" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms Of Service", href: "/terms" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -94,6 +84,9 @@ const SectionTitle = ({ children, aside }: { children: React.ReactNode; aside?: 
 const Checkout = () => {
   const { lines, subtotal, clear } = useCart();
   const hydrated = useHydrated();
+  const { user, openLogin } = useAuth();
+  const { defaultAddress } = useAddresses();
+  const { add: addOrder } = useOrders();
 
   const [values, setValues] = useState<Values>(initialValues);
   const [errors, setErrors] = useState<Errors>({});
@@ -102,6 +95,20 @@ const Checkout = () => {
   const [saveInfo, setSaveInfo] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+
+  // Signed in: fill contact + shipping from the account and its default address, once per user
+  const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
+  if (user && prefilledFor !== user.id) {
+    setPrefilledFor(user.id);
+    const a = defaultAddress;
+    setValues((prev) => ({
+      ...prev,
+      email: user.email,
+      name: a?.name ?? `${user.firstName} ${user.lastName}`,
+      phone: a ? formatPhone(a.phoneCountry, a.phone) : formatPhone(user.phoneCountry, user.phone),
+      ...(a && { country: a.country, city: a.city, address: a.line1, apartment: a.line2, postalCode: a.postalCode }),
+    }));
+  }
 
   const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -132,8 +139,45 @@ const Checkout = () => {
       return;
     }
 
-    // No payment backend yet — confirm locally and empty the bag
-    setOrderNumber(`BRL-${Math.floor(100000 + Math.random() * 900000)}`);
+    // No payment backend yet — confirm locally, keep it in the account's order history, empty the bag
+    const number = `BRL-${Math.floor(100000 + Math.random() * 900000)}`;
+    if (user) {
+      const order: Order = {
+        number,
+        placedAt: new Date().toISOString(),
+        status: "processing",
+        lines: lines.map((l) => ({
+          productId: l.id,
+          title: l.product.title,
+          image: l.product.image,
+          href: l.product.href,
+          colour: l.colour,
+          size: l.size,
+          qty: l.qty,
+          price: l.product.price,
+        })),
+        subtotal,
+        shipping: 0,
+        total: subtotal,
+        payment:
+          payment === "card"
+            ? `Card ending ${digits(values.cardNumber, 16).slice(-4)}`
+            : payment === "paypal"
+              ? "PayPal"
+              : "Other payment",
+        shipTo: {
+          name: values.name,
+          line1: values.address,
+          line2: values.apartment,
+          city: values.city,
+          postalCode: values.postalCode,
+          country: values.country,
+          phone: values.phone,
+        },
+      };
+      addOrder(order);
+    }
+    setOrderNumber(number);
     clear();
     window.scrollTo({ top: 0 });
   };
@@ -189,6 +233,11 @@ const Checkout = () => {
           <Button href="/shop" className="mt-10">
             Continue shopping
           </Button>
+          {user && (
+            <Link href="/account/orders" className="mt-5 text-xs text-ink underline underline-offset-4 transition-opacity hover:opacity-60">
+              View your orders
+            </Link>
+          )}
         </div>
       </section>
     );
@@ -242,9 +291,17 @@ const Checkout = () => {
             <section aria-labelledby="checkout-contact">
               <SectionTitle
                 aside={
-                  <Link href="/account" className="text-xs text-ink underline underline-offset-2 transition-opacity hover:opacity-60">
-                    Sign in
-                  </Link>
+                  user ? (
+                    <span className="text-xs text-muted">Signed in as {user.firstName}</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openLogin({ next: null })}
+                      className="text-xs text-ink underline underline-offset-2 transition-opacity hover:opacity-60"
+                    >
+                      Sign in
+                    </button>
+                  )
                 }
               >
                 <span id="checkout-contact">Contact</span>
@@ -262,7 +319,7 @@ const Checkout = () => {
                 <TextField label="Name" autoComplete="name" className="col-span-2" {...field("name")} />
                 <SelectField
                   label="Country / Region"
-                  options={COUNTRIES}
+                  options={SHIPPING_COUNTRIES}
                   name="country"
                   value={values.country}
                   error={errors.country}

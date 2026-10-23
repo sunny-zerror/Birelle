@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
 import { RiArrowLeftLine, RiArrowRightLine, RiCloseLine } from "@remixicon/react";
 import { products } from "@/data/products";
+import { useAuth } from "@/components/providers/AuthProvider";
 import type { Product } from "@/types";
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -25,15 +26,17 @@ const menu: MenuItem[] = [
   { key: "about", label: "The House of Birelle", href: "/about" },
 ];
 
+// Account links ask signed-out visitors to sign in first
 const secondary = [
-  { label: "Wishlist", href: "/wishlist" },
-  { label: "My Account", href: "/account" },
-  { label: "Can we help you?", href: "/about" },
+  { label: "Wishlist", href: "/account/wishlist", auth: true },
+  { label: "My Account", href: "/account", auth: true },
+  { label: "Can we help you?", href: "/contact", auth: false },
 ];
 
 type Props = { isOpen: boolean; onClose: () => void };
 
 const MenuDrawer = ({ isOpen, onClose }: Props) => {
+  const { requireAuth } = useAuth();
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const active = menu.find((m) => m.key === activeKey && m.items);
@@ -149,7 +152,14 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
             <ul className="mt-auto flex flex-col gap-3 border-t border-line pt-8 text-sm">
               {secondary.map((s) => (
                 <li key={s.label}>
-                  <Link href={s.href} onClick={onClose} className="transition-opacity hover:opacity-60">
+                  <Link
+                    href={s.href}
+                    onClick={(e) => {
+                      onClose();
+                      if (s.auth) requireAuth(s.href)(e);
+                    }}
+                    className="transition-opacity hover:opacity-60"
+                  >
                     {s.label}
                   </Link>
                 </li>

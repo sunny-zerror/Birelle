@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Personal, session-only pages
-      disallow: ["/checkout", "/wishlist", "/api/"],
+      disallow: ["/checkout", "/account", "/api/"],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
     host: siteConfig.url,

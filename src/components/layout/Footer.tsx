@@ -6,7 +6,8 @@ const columns = [
   {
     title: "Support",
     links: [
-      { label: "Delivery & returns", href: "/delivery-returns" },
+      { label: "Delivery & returns", href: "/faq#delivery" },
+      { label: "FAQ", href: "/faq" },
       { label: "Your account", href: "/account" },
       { label: "Contact", href: "/contact" },
     ],
@@ -24,6 +25,7 @@ const columns = [
       { label: "Privacy Policy", href: "/privacy-policy" },
       { label: "Terms and Conditions", href: "/terms" },
       { label: "Cookie Policy", href: "/cookie-policy" },
+      { label: "Faq", href: "/faq" },
     ],
   },
 ];
