@@ -12,6 +12,10 @@ import Loader from "@/components/layout/Loader";
 import { LoaderProvider } from "@/components/providers/LoaderProvider";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { usePathname } from "next/navigation";
+import { ZcomProvider } from "@zcom/storefront-kit/client";
+import { CatalogProvider, type CatalogCategory } from "@/components/providers/CatalogProvider";
+import { zcomConfig } from "@/zcom.config";
+import type { Look, Product } from "@/types";
 import { useEffect } from "react";
 
 import gsap from "gsap";
@@ -20,7 +24,14 @@ import { ViewTransitions } from "next-view-transitions";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+type SiteLayoutProps = {
+  children: React.ReactNode;
+  products: Product[];
+  categories: CatalogCategory[];
+  looks: Look[];
+};
+
+export default function SiteLayout({ children, products, categories, looks }: SiteLayoutProps) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -53,6 +64,8 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <LenisScroll>
         <LoaderProvider>
         <ToastProvider>
+        <ZcomProvider config={zcomConfig}>
+        <CatalogProvider products={products} categories={categories} looks={looks}>
         <AuthProvider>
         <CartProvider>
           <WishlistProvider>
@@ -65,6 +78,8 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           </WishlistProvider>
         </CartProvider>
         </AuthProvider>
+        </CatalogProvider>
+        </ZcomProvider>
         </ToastProvider>
         </LoaderProvider>
       </LenisScroll>

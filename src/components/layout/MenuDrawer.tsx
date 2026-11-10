@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
 import { RiArrowLeftLine, RiArrowRightLine, RiCloseLine } from "@remixicon/react";
-import { products } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { Product } from "@/types";
 
@@ -17,11 +17,12 @@ type MenuItem = {
   items?: Product[];
 };
 
-const menu: MenuItem[] = [
+// New In, then one panel per store category (from Zcom) that has products
+const buildMenu = (products: Product[], categories: { key: string; label: string }[]): MenuItem[] => [
   { key: "new", label: "New In", href: "/shop", items: products.filter((p) => p.isNew) },
-  { key: "tees", label: "Tees", href: "/shop", items: products.filter((p) => p.category === "tees") },
-  { key: "bottoms", label: "Bottoms", href: "/shop", items: products.filter((p) => p.category === "bottoms") },
-  { key: "shorts", label: "Shorts", href: "/shop", items: products.filter((p) => p.category === "shorts") },
+  ...categories
+    .filter((c) => c.key !== "all" && products.some((p) => p.category === c.key))
+    .map((c) => ({ key: c.key, label: c.label, href: "/shop", items: products.filter((p) => p.category === c.key) })),
   { key: "all", label: "Shop All", href: "/shop" },
   { key: "about", label: "The House of Birelle", href: "/about" },
 ];
@@ -36,6 +37,8 @@ const secondary = [
 type Props = { isOpen: boolean; onClose: () => void };
 
 const MenuDrawer = ({ isOpen, onClose }: Props) => {
+  const { products, categories } = useCatalog();
+  const menu = buildMenu(products, categories);
   const { requireAuth } = useAuth();
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);

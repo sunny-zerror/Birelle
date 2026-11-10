@@ -8,10 +8,24 @@ export interface SiteRoute {
   priority: number;
 }
 
-export type ProductCategory = "tees" | "bottoms" | "shorts";
+// Zcom category slug (e.g. "tees", "bottoms", "shorts")
+export type ProductCategory = string;
+
+/** Link from a storefront product to its Zcom record, for the cart and wishlist */
+export interface ZcomProductRef {
+  productId: string;
+  /** Option names in Zcom order, e.g. ["Size", "Colour"] */
+  optionNames: string[];
+  variants: {
+    id: string;
+    values: string[];
+    price: number;
+    purchasable: boolean;
+  }[];
+}
 
 export interface Product {
-  id: string;
+  id: string; // URL slug
   title: string;
   category: ProductCategory;
   price: number;
@@ -20,9 +34,11 @@ export interface Product {
   featured: string; // model shot
   colour: string; // default colour
   colours?: string[]; // every colour it comes in — falls back to [colour]
-  description: string;
+  sizes?: string[]; // sizes from the store's options
+  description: string; // plain text
   isNew?: boolean;
   pairsWith?: string; // product id shown in "Complete the look"
+  zcom?: ZcomProductRef;
 }
 
 export interface LookPhoto {
@@ -93,6 +109,7 @@ export interface OrderLine {
 }
 
 export interface Order {
+  id?: string; // Zcom order id
   number: string; // "BRL-482913"
   placedAt: string; // ISO date
   status: OrderStatus;

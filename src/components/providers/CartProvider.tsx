@@ -1,123 +1,150 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react";
-import { getProduct } from "@/data/products";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useAnalytics, useCart as useZcomCart } from "@zcom/storefront-kit/client";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
+import type { CartLine as ZcomCartLine } from "@zcom/storefront-kit/client";
+import { useCatalog } from "@/components/providers/CatalogProvider";
+import { useToast } from "@/components/providers/ToastProvider";
+import { findVariantId, variantLabels } from "@/lib/zcom/adapters";
 import type { Product } from "@/types";
-
-const STORAGE_KEY = "birelle-cart";
 
 type StoredLine = { id: string; size: string; qty: number; colour?: string };
 
-// colour is always resolved on a line (older saved lines fall back to the product default)
+// colour is always resolved on a line
 export type CartLine = StoredLine & { key: string; product: Product; colour: string };
 
 type CartContextValue = {
   lines: CartLine[];
   count: number;
   subtotal: number;
+  /** Zcom cart id, for checkout */
+  cartId: string | null;
   isOpen: boolean;
+  /** True while a cart change is on its way to the store */
+  pending: boolean;
   open: () => void;
   close: () => void;
   add: (id: string, size: string, colour?: string, qty?: number) => void;
   setQty: (key: string, qty: number) => void;
   remove: (key: string) => void;
   clear: () => void;
+  applyCode: (code: string) => Promise<void>;
+  removeCode: () => Promise<void>;
+  promotionCode: string | null;
+  discount: number;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const lineKey = (id: string, size: string, colour = "") => `${id}__${size}__${colour}`;
-const keyOf = (l: StoredLine) => lineKey(l.id, l.size, l.colour);
+const keyOf = (l: Pick<ZcomCartLine, "productId" | "variantId">) => `${l.productId}__${l.variantId ?? ""}`;
 
-// --- Persisted store (localStorage), read via useSyncExternalStore ---------
-const EMPTY: StoredLine[] = [];
-const listeners = new Set<() => void>();
-let cache: StoredLine[] | null = null;
+// A product the catalogue doesn't list (e.g. unpublished since it was added) still shows in the bag
+const fallbackProduct = (l: ZcomCartLine): Product => ({
+  id: l.productId,
+  title: l.name ?? "Product",
+  category: "",
+  price: l.finalPrice ?? l.price ?? 0,
+  href: "/shop",
+  image: l.asset?.path ?? "/og.png",
+  featured: l.asset?.path ?? "/og.png",
+  colour: "",
+  description: "",
+});
 
-const readStore = () => {
-  if (cache === null) {
-    try {
-      cache = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as StoredLine[];
-    } catch {
-      cache = EMPTY;
-    }
-  }
-  return cache;
-};
-
-const writeStore = (update: (prev: StoredLine[]) => StoredLine[]) => {
-  cache = update(readStore());
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
-  } catch {
-    // storage unavailable — cart lives for this visit only
-  }
-  listeners.forEach((l) => l());
-};
-
-const subscribe = (listener: () => void) => {
-  listeners.add(listener);
-  // Keep other open tabs in sync
-  const onStorage = (e: StorageEvent) => {
-    if (e.key !== STORAGE_KEY) return;
-    cache = null;
-    listener();
-  };
-  window.addEventListener("storage", onStorage);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", onStorage);
-  };
-};
-
+// The bag lives on the Zcom store (server cart; guests get a signed guest id, merged at sign in)
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  // Server render (and first client render) see an empty cart, so markup matches
-  const stored = useSyncExternalStore(subscribe, readStore, () => EMPTY);
+  const zcom = useZcomCart();
+  const { getProduct, getByZcomId } = useCatalog();
+  const analytics = useAnalytics();
+  const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  const add = useCallback((id: string, size: string, colour?: string, qty = 1) => {
-    const resolved = colour ?? getProduct(id)?.colour;
-    writeStore((prev) => {
-      const existing = prev.find((l) => keyOf(l) === lineKey(id, size, resolved));
-      if (existing) return prev.map((l) => (l === existing ? { ...l, qty: l.qty + qty } : l));
-      return [...prev, { id, size, qty, colour: resolved }];
-    });
-    setIsOpen(true);
-  }, []);
+  const fail = useCallback((error: unknown) => toast.error(getErrorMessage(error)), [toast]);
 
-  const setQty = useCallback((key: string, qty: number) => {
-    writeStore((prev) =>
-      qty < 1 ? prev.filter((l) => keyOf(l) !== key) : prev.map((l) => (keyOf(l) === key ? { ...l, qty } : l)),
-    );
-  }, []);
+  const add = useCallback(
+    (id: string, size: string, colour?: string, qty = 1) => {
+      const product = getProduct(id);
+      if (!product?.zcom) return;
+      const variantId = findVariantId(product, size, colour);
+      setIsOpen(true);
+      zcom
+        .addItem({ productId: product.zcom.productId, variantId, qty })
+        .then(() => {
+          const variant = { _id: variantId, sku: null, title: null, optionValues: null, price: product.price, compareAtPrice: null, status: null, availability: null, availableQuantity: null };
+          analytics.addToCart({ _id: product.zcom!.productId, name: product.title, variants: [variant], productOptions: [] }, variant, qty);
+        })
+        .catch(fail);
+    },
+    [getProduct, zcom, analytics, fail],
+  );
 
-  const remove = useCallback((key: string) => {
-    writeStore((prev) => prev.filter((l) => keyOf(l) !== key));
-  }, []);
+  const findLine = useCallback((key: string) => zcom.lines.find((l) => keyOf(l) === key), [zcom.lines]);
 
-  const clear = useCallback(() => writeStore(() => []), []);
+  const setQty = useCallback(
+    (key: string, qty: number) => {
+      const line = findLine(key);
+      if (line) zcom.setQuantity(line, qty).catch(fail);
+    },
+    [findLine, zcom, fail],
+  );
+
+  const remove = useCallback(
+    (key: string) => {
+      const line = findLine(key);
+      if (line) zcom.removeLine(line).catch(fail);
+    },
+    [findLine, zcom, fail],
+  );
+
+  // After a paid order the store empties the bag itself — re-read it
+  const clear = useCallback(() => {
+    void zcom.refetch();
+  }, [zcom]);
+
+  const applyCode = useCallback(async (code: string) => {
+    await zcom.applyPromotion(code);
+  }, [zcom]);
+
+  const removeCode = useCallback(async () => {
+    await zcom.removePromotion();
+  }, [zcom]);
 
   const value = useMemo<CartContextValue>(() => {
-    const lines = stored.flatMap((l) => {
-      const product = getProduct(l.id);
-      return product ? [{ ...l, key: keyOf(l), product, colour: l.colour ?? product.colour }] : [];
+    const lines: CartLine[] = zcom.lines.map((l) => {
+      const product = getByZcomId(l.productId) ?? fallbackProduct(l);
+      const { size, colour } = variantLabels(product, l.variantId);
+      return {
+        key: keyOf(l),
+        id: product.id,
+        size,
+        colour,
+        qty: l.qty,
+        product: { ...product, price: l.finalPrice ?? l.price ?? product.price },
+      };
     });
-
+    const cart = zcom.cart;
     return {
       lines,
-      count: lines.reduce((n, l) => n + l.qty, 0),
-      subtotal: lines.reduce((n, l) => n + l.qty * l.product.price, 0),
+      count: zcom.itemCount,
+      subtotal: cart?.discountedPrice ?? cart?.totalprice ?? 0,
+      cartId: cart?._id ?? null,
       isOpen,
+      pending: zcom.pending,
       open,
       close,
       add,
       setQty,
       remove,
       clear,
+      applyCode,
+      removeCode,
+      promotionCode: cart?.promotion?.promotionCode ?? null,
+      discount: cart?.totalDiscount ?? 0,
     };
-  }, [stored, isOpen, open, close, add, setQty, remove, clear]);
+  }, [zcom.lines, zcom.cart, zcom.itemCount, zcom.pending, getByZcomId, isOpen, open, close, add, setQty, remove, clear, applyCode, removeCode]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

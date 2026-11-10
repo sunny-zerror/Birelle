@@ -1,0 +1,228 @@
+{
+  "categories": [
+    {
+      "slug": "tees",
+      "name": "Tees"
+    },
+    {
+      "slug": "bottoms",
+      "name": "Bottoms"
+    },
+    {
+      "slug": "shorts",
+      "name": "Shorts"
+    }
+  ],
+  "products": [
+    {
+      "slug": "signature-tee",
+      "name": "Signature Tee",
+      "category": "tees",
+      "price": 185,
+      "description": "Relaxed boxy tee in heavyweight cotton jersey, finished with a small embroidered Birelle crest at the chest and dropped shoulders.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "Black",
+        "White",
+        "Sand"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_1.webp",
+          "alt": "Signature Tee",
+          "featured": true
+        },
+        {
+          "path": "/images/lookbook/photos/DSC03822.webp",
+          "alt": "Signature Tee on model",
+          "hover": true
+        }
+      ]
+    },
+    {
+      "slug": "painters-trouser",
+      "name": "The Painter's Trouser",
+      "category": "bottoms",
+      "price": 245,
+      "description": "Wide-leg trouser printed edge to edge with a painterly heraldic scene, framed by contrast side stripes and an elasticated drawcord waist.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "Multicolour"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_2.webp",
+          "alt": "The Painter's Trouser",
+          "featured": true
+        },
+        {
+          "path": "/images/homepage/seen_on_you/img4.jpeg",
+          "alt": "The Painter's Trouser on model",
+          "hover": true
+        }
+      ]
+    },
+    {
+      "slug": "script-jogger",
+      "name": "Script Jogger",
+      "category": "bottoms",
+      "price": 210,
+      "description": "Tapered jogger in brushed-back fleece with hand-drawn script panels along each leg, ribbed cuffs and contrast piped pockets.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "Black",
+        "Navy"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_3.webp",
+          "alt": "Script Jogger",
+          "featured": true
+        },
+        {
+          "path": "/images/lookbook/photos/DSC03760.webp",
+          "alt": "Script Jogger on model",
+          "hover": true
+        }
+      ]
+    },
+    {
+      "slug": "panel-trouser",
+      "name": "Panel Trouser",
+      "category": "bottoms",
+      "price": 225,
+      "description": "Fluid straight-leg trouser in off-white twill, cut with painted side panels that move with every step.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "White",
+        "Sand"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_4.webp",
+          "alt": "Panel Trouser",
+          "featured": true
+        },
+        {
+          "path": "/images/homepage/seen_on_you/img2.jpeg",
+          "alt": "Panel Trouser on model",
+          "hover": true
+        }
+      ]
+    },
+    {
+      "slug": "painted-sleeve-tee",
+      "name": "Painted Sleeve Tee",
+      "category": "tees",
+      "price": 165,
+      "description": "Raglan tee in black jersey with sun-washed painted sleeves in sky blues and warm ochres, finished with fine ribbed trims.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "Black",
+        "White"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_5.webp",
+          "alt": "Painted Sleeve Tee",
+          "featured": true
+        },
+        {
+          "path": "/images/homepage/seen_on_you/img1.jpeg",
+          "alt": "Painted Sleeve Tee on model",
+          "hover": true
+        }
+      ]
+    },
+    {
+      "slug": "script-trim-tee",
+      "name": "Script Trim Tee",
+      "category": "tees",
+      "price": 155,
+      "description": "Clean white tee with hand-drawn script trims at the collar and cuffs, cut in a relaxed fit from soft combed cotton.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "White",
+        "Black",
+        "Navy"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_6.webp",
+          "alt": "Script Trim Tee",
+          "featured": true
+        },
+        {
+          "path": "/images/lookbook/photos/DSC03676.webp",
+          "alt": "Script Trim Tee on model",
+          "hover": true
+        }
+      ]
+    },
+    {
+      "slug": "tide-short",
+      "name": "Tide Short",
+      "category": "shorts",
+      "price": 175,
+      "description": "Knee-length short printed with a tidal abstract in deep blues and amber, with a black side panel and elasticated waist.",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colours": [
+        "Multicolour"
+      ],
+      "images": [
+        {
+          "path": "/images/homepage/curated/cutout/product_7.webp",
+          "alt": "Tide Short",
+          "featured": true
+        },
+        {
+          "path": "/images/lookbook/photos/DSC03207.webp",
+          "alt": "Tide Short on model",
+          "hover": true
+        }
+      ]
+    }
+  ]
+}

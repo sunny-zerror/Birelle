@@ -5,7 +5,8 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { RiArrowLeftLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
-import { LOOKBOOK_SEASON, looks } from "@/data/lookbook";
+import { LOOKBOOK_SEASON } from "@/data/lookbook";
+import { useCatalog } from "@/components/providers/CatalogProvider";
 
 gsap.registerPlugin(useGSAP);
 
@@ -64,6 +65,7 @@ type LookDialogProps = {
 };
 
 export const LookDialog = ({ index, origin, onClose, onCollection }: LookDialogProps) => {
+  const { looks } = useCatalog();
   const look = looks[index];
   const { root, close } = useDialog(onClose);
 
@@ -117,6 +119,7 @@ type CollectionDialogProps = {
 };
 
 export const CollectionDialog = ({ onClose, onOpen }: CollectionDialogProps) => {
+  const { looks } = useCatalog();
   const { root, close } = useDialog(onClose);
 
   return (

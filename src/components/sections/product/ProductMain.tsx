@@ -5,7 +5,8 @@ import { Link } from "next-view-transitions";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { RiArrowLeftSLine, RiCheckLine, RiHeartFill, RiHeartLine, RiShareForwardLine } from "@remixicon/react";
-import { COLOUR_SWATCHES, SIZES, formatPrice, getColours } from "@/data/products";
+import { formatPrice, getColours, getSizes, swatchFor } from "@/data/products";
+import { ONE_SIZE, isSizeAvailable } from "@/lib/zcom/adapters";
 import type { Product } from "@/types";
 import { ImageSkeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/components/providers/CartProvider";
@@ -33,7 +34,9 @@ const details = [
 
 const ProductMain = ({ product }: { product: Product }) => {
   const { add } = useCart();
-  const [size, setSize] = useState<string | null>(null);
+  const sizes = getSizes(product);
+  // One-size pieces are ready to add straight away
+  const [size, setSize] = useState<string | null>(sizes.length === 1 && sizes[0] === ONE_SIZE ? ONE_SIZE : null);
   const colours = getColours(product);
   const [colour, setColour] = useState(product.colour);
   const [added, setAdded] = useState(false);
@@ -102,7 +105,8 @@ const ProductMain = ({ product }: { product: Product }) => {
               <p className="shrink-0 text-base tabular-nums text-ink">{formatPrice(product.price)}</p>
             </div>
 
-            {/* Colours — label left, swatches right */}
+            {/* Colours — label left, swatches right (only for pieces that come in colours) */}
+            {colours.length > 0 && (
             <div className="pdp-reveal mt-8 flex items-center justify-between gap-6 border-t border-line pt-5">
             <p className="text-base text-ink">
               Colour: <span className="ml-1">{colour}</span>
@@ -126,31 +130,36 @@ const ProductMain = ({ product }: { product: Product }) => {
                     <span
                       aria-hidden="true"
                       className="size-5 rounded-full ring-1 ring-ink/10"
-                      style={{ background: COLOUR_SWATCHES[c] ?? "#ccc" }}
+                      style={{ background: swatchFor(c) }}
                     />
                   </button>
                 );
               })}
             </div>
             </div>
+            )}
 
             {/* Sizes — label left, options right */}
             <div className="pdp-reveal mt-4 flex items-center justify-between gap-6 border-t border-line pt-4">
             <p className="text-base text-ink">Size</p>
             <div role="radiogroup" aria-label="Size" className="-mr-3 flex gap-1">
-              {SIZES.map((s) => {
+              {sizes.map((s) => {
                 const on = s === size;
+                // Sold out in this colour: shown, but can't be picked
+                const soldOut = !isSizeAvailable(product, s, colour);
                 return (
                   <button
                     key={s}
                     type="button"
                     role="radio"
                     aria-checked={on}
+                    disabled={soldOut}
+                    title={soldOut ? `${s} — sold out` : undefined}
                     onClick={() => {
                       setSize(s);
                       setNeedsSize(false);
                     }}
-                    className="group relative center h-8 w-10 text-sm text-ink"
+                    className={`group relative center h-8 text-sm text-ink disabled:cursor-not-allowed disabled:line-through disabled:opacity-35 ${s.length > 3 ? "px-3" : "w-10"}`}
                   >
                     {s}
                     <span

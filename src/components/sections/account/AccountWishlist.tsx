@@ -5,7 +5,7 @@ import { Link } from "next-view-transitions";
 import { RiCloseLine } from "@remixicon/react";
 import { useCart } from "@/components/providers/CartProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
-import { SIZES, formatPrice } from "@/data/products";
+import { formatPrice, getSizes } from "@/data/products";
 import type { Product } from "@/types";
 import { ImageSkeleton } from "@/components/ui/skeleton";
 import { AccountHeading, EmptyState, ease } from "./ui";
@@ -49,7 +49,7 @@ const WishlistCard = ({ product, index }: { product: Product; index: number }) =
       <div className="mt-5 h-9 w-full max-w-[13.5rem]">
         {picking ? (
           <div role="group" aria-label={`Choose a size for ${product.title}`} className="flex h-full animate-panel-in gap-1">
-            {SIZES.map((s) => (
+            {getSizes(product).map((s) => (
               <button
                 key={s}
                 type="button"

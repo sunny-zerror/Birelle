@@ -6,6 +6,8 @@ const MASK_MAX_WIDTH = 256;
 /** Decodes a garment image into a GPU texture + an alpha mask for picking. */
 export function loadGarmentAsset(src: string): Promise<GarmentAsset> {
   const image = new Image();
+  // Zcom artwork arrives same-origin (via /_next/image, see toLook); CORS mode keeps any other host readable by WebGL
+  image.crossOrigin = "anonymous";
   image.decoding = "async";
   // `load` (not decode()) — decode() can stall forever in background tabs
   const loaded = new Promise<void>((resolve, reject) => {

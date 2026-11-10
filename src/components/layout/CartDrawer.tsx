@@ -5,16 +5,19 @@ import { Link } from "next-view-transitions";
 import { RiAddLine, RiArrowDownSLine, RiCloseLine, RiSubtractLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
 import { useCart } from "@/components/providers/CartProvider";
-import { SIZES, formatPrice, products } from "@/data/products";
+import { formatPrice, getSizes } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogProvider";
+import { siteConfig } from "@/config/site";
 import type { Product } from "@/types";
 
-const FREE_DELIVERY_FROM = 250;
+const FREE_DELIVERY_FROM = siteConfig.shipping.freeOver;
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 // Recommendation card with its own size picker — sized so 1.5 cards show (one card + gap-8 + half a card = 100%)
 const Suggestion = ({ product, onAdd }: { product: Product; onAdd: (size: string) => void }) => {
-  const [size, setSize] = useState("M");
+  const sizes = getSizes(product);
+  const [size, setSize] = useState(sizes.includes("M") ? "M" : sizes[0]);
 
   return (
     <li className="flex w-[calc((100%-2rem)/1.5)] shrink-0 snap-start gap-4">
@@ -32,7 +35,7 @@ const Suggestion = ({ product, onAdd }: { product: Product; onAdd: (size: string
               onChange={(e) => setSize(e.target.value)}
               className="h-8 w-full appearance-none border border-ink/30 bg-white pl-2 pr-6 text-sm text-ink focus:border-ink focus:outline-none"
             >
-              {SIZES.map((s) => (
+              {sizes.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
@@ -53,6 +56,7 @@ const Suggestion = ({ product, onAdd }: { product: Product; onAdd: (size: string
 
 const CartDrawer = () => {
   const { lines, count, subtotal, isOpen, close, add, setQty, remove } = useCart();
+  const { products } = useCatalog();
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Lock page scroll, focus the close button, close on Escape

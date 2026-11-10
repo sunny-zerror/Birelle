@@ -50,10 +50,11 @@ const ShellSkeleton = () => (
 // Dashboard frame for every /account page: sign-in guard, side navigation, sign out.
 // Desktop: sticky sidebar with sign out pinned to its foot. Mobile: scrolling tab row, sign out under the page.
 const AccountShell = ({ children }: { children: React.ReactNode }) => {
-  const { user, openLogin, isSigningOut } = useAuth();
+  const { user, isReady, openLogin, isSigningOut } = useAuth();
   const { count: wishlistCount } = useWishlist();
   const { orders } = useOrders();
-  const hydrated = useHydrated();
+  // Wait for a returning customer's session to be restored before deciding they're signed out
+  const hydrated = useHydrated() && isReady;
   const pathname = usePathname();
   const router = useTransitionRouter();
   const navRef = useRef<HTMLUListElement>(null);

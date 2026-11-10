@@ -1,9 +1,11 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo } from "react";
-import { getProduct } from "@/data/products";
+import { useWishlist as useZcomWishlist } from "@zcom/storefront-kit/client";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { sessionStore, wishlistsStore } from "@/lib/accountStore";
+import { useCatalog } from "@/components/providers/CatalogProvider";
+import { useToast } from "@/components/providers/ToastProvider";
 import type { Product } from "@/types";
 
 type WishlistContextValue = {
@@ -16,53 +18,57 @@ type WishlistContextValue = {
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
-const EMPTY: string[] = [];
-
-// Each account keeps its own list (see wishlistsStore) — signed out, the wishlist is empty
-const writeFor = (email: string, update: (prev: string[]) => string[]) =>
-  wishlistsStore.write((all) => ({ ...all, [email]: update(all[email] ?? EMPTY) }));
-
+// Saved pieces live on the customer's Zcom account — signed out, the wishlist is empty
 export const WishlistProvider = ({ children }: { children: React.ReactNode }) => {
   const { user, openLogin } = useAuth();
-  const all = wishlistsStore.useValue();
-  const stored = (user && all[user.email]) || EMPTY;
+  const zcom = useZcomWishlist();
+  const { getProduct, getByZcomId } = useCatalog();
+  const toast = useToast();
+
+  const zcomIdOf = useCallback((id: string) => getProduct(id)?.zcom?.productId, [getProduct]);
 
   // Saving needs an account — signed-out visitors sign in first, then the piece is saved for them
   const toggle = useCallback(
     (id: string) => {
+      const zcomId = zcomIdOf(id);
+      if (!zcomId) return;
       if (user) {
-        writeFor(user.email, (prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+        zcom.toggle(zcomId).catch((error) => toast.error(getErrorMessage(error)));
         return;
       }
       openLogin({
         next: null,
-        // Runs once signed in — the session is already stored, so read it rather than the stale closure
         onSuccess: () => {
-          const email = sessionStore.read()?.email;
-          if (email) writeFor(email, (prev) => (prev.includes(id) ? prev : [...prev, id]));
+          if (!zcom.has(zcomId)) zcom.toggle(zcomId).catch(() => undefined);
         },
       });
     },
-    [user, openLogin],
+    [user, openLogin, zcom, zcomIdOf, toast],
   );
 
   const remove = useCallback(
     (id: string) => {
-      if (user) writeFor(user.email, (prev) => prev.filter((i) => i !== id));
+      const zcomId = zcomIdOf(id);
+      if (user && zcomId && zcom.has(zcomId)) {
+        zcom.toggle(zcomId).catch((error) => toast.error(getErrorMessage(error)));
+      }
     },
-    [user],
+    [user, zcom, zcomIdOf, toast],
   );
 
   const value = useMemo<WishlistContextValue>(() => {
-    const items = stored.flatMap((id) => getProduct(id) ?? []);
+    const items = user ? zcom.productIds.flatMap((zid) => getByZcomId(zid) ?? []) : [];
     return {
       items,
       count: items.length,
-      has: (id) => stored.includes(id),
+      has: (id) => {
+        const zcomId = zcomIdOf(id);
+        return !!user && !!zcomId && zcom.has(zcomId);
+      },
       toggle,
       remove,
     };
-  }, [stored, toggle, remove]);
+  }, [user, zcom, getByZcomId, zcomIdOf, toggle, remove]);
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 };

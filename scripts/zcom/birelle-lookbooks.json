@@ -1,0 +1,1309 @@
+{
+  "lookbooks": [
+    {
+      "slug": "look-01",
+      "title": "Look 01",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Tees"
+      ],
+      "sortOrder": 0,
+      "cover": {
+        "path": "/images/lookbook/full/1.webp",
+        "alt": "Birelle Look 01"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/1.webp",
+        "alt": "Birelle Look 01 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 01",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 01",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 01",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 01",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 01",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 01",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 01",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-02",
+      "title": "Look 02",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Shirts"
+      ],
+      "sortOrder": 1,
+      "cover": {
+        "path": "/images/lookbook/full/2.webp",
+        "alt": "Birelle Look 02"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/2.webp",
+        "alt": "Birelle Look 02 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 02",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 02",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 02",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 02",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 02",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 02",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 02",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-03",
+      "title": "Look 03",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Knitwear"
+      ],
+      "sortOrder": 2,
+      "cover": {
+        "path": "/images/lookbook/full/3.webp",
+        "alt": "Birelle Look 03"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/3.webp",
+        "alt": "Birelle Look 03 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 03",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 03",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 03",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 03",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 03",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 03",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 03",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-04",
+      "title": "Look 04",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Outerwear"
+      ],
+      "sortOrder": 3,
+      "cover": {
+        "path": "/images/lookbook/full/4.webp",
+        "alt": "Birelle Look 04"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/4.webp",
+        "alt": "Birelle Look 04 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 04",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 04",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 04",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 04",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 04",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 04",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 04",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-05",
+      "title": "Look 05",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Essentials"
+      ],
+      "sortOrder": 4,
+      "cover": {
+        "path": "/images/lookbook/full/5.webp",
+        "alt": "Birelle Look 05"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/5.webp",
+        "alt": "Birelle Look 05 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 05",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 05",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 05",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 05",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 05",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 05",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 05",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-06",
+      "title": "Look 06",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Tees"
+      ],
+      "sortOrder": 5,
+      "cover": {
+        "path": "/images/lookbook/full/6.webp",
+        "alt": "Birelle Look 06"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/6.webp",
+        "alt": "Birelle Look 06 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 06",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 06",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 06",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 06",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 06",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 06",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 06",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-07",
+      "title": "Look 07",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Shirts"
+      ],
+      "sortOrder": 6,
+      "cover": {
+        "path": "/images/lookbook/full/7.webp",
+        "alt": "Birelle Look 07"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/7.webp",
+        "alt": "Birelle Look 07 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 07",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 07",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 07",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 07",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 07",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 07",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 07",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-08",
+      "title": "Look 08",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Knitwear"
+      ],
+      "sortOrder": 7,
+      "cover": {
+        "path": "/images/lookbook/full/8.webp",
+        "alt": "Birelle Look 08"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/8.webp",
+        "alt": "Birelle Look 08 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 08",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 08",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 08",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 08",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 08",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 08",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 08",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-09",
+      "title": "Look 09",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Outerwear"
+      ],
+      "sortOrder": 8,
+      "cover": {
+        "path": "/images/lookbook/full/9.webp",
+        "alt": "Birelle Look 09"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/9.webp",
+        "alt": "Birelle Look 09 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 09",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 09",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 09",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 09",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 09",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 09",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 09",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-10",
+      "title": "Look 10",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Essentials"
+      ],
+      "sortOrder": 9,
+      "cover": {
+        "path": "/images/lookbook/full/10.webp",
+        "alt": "Birelle Look 10"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/10.webp",
+        "alt": "Birelle Look 10 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 10",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 10",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 10",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 10",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 10",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 10",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 10",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-11",
+      "title": "Look 11",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Tees"
+      ],
+      "sortOrder": 10,
+      "cover": {
+        "path": "/images/lookbook/full/11.webp",
+        "alt": "Birelle Look 11"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/11.webp",
+        "alt": "Birelle Look 11 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 11",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 11",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 11",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 11",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 11",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 11",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 11",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-12",
+      "title": "Look 12",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Shirts"
+      ],
+      "sortOrder": 11,
+      "cover": {
+        "path": "/images/lookbook/full/12.webp",
+        "alt": "Birelle Look 12"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/12.webp",
+        "alt": "Birelle Look 12 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 12",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 12",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 12",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 12",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 12",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 12",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 12",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-13",
+      "title": "Look 13",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Knitwear"
+      ],
+      "sortOrder": 12,
+      "cover": {
+        "path": "/images/lookbook/full/13.webp",
+        "alt": "Birelle Look 13"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/13.webp",
+        "alt": "Birelle Look 13 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 13",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 13",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 13",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 13",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 13",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 13",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 13",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-14",
+      "title": "Look 14",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Outerwear"
+      ],
+      "sortOrder": 13,
+      "cover": {
+        "path": "/images/lookbook/full/14.webp",
+        "alt": "Birelle Look 14"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/14.webp",
+        "alt": "Birelle Look 14 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 14",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 14",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 14",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 14",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 14",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 14",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 14",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "look-15",
+      "title": "Look 15",
+      "subtitle": "SS26",
+      "intro": "A considered piece from the Birelle lookbook — cut, colour and fabric developed together for an easy, everyday silhouette.",
+      "tags": [
+        "Essentials"
+      ],
+      "sortOrder": 14,
+      "cover": {
+        "path": "/images/lookbook/full/15.webp",
+        "alt": "Birelle Look 15"
+      },
+      "coverMobile": {
+        "path": "/images/lookbook/rain/15.webp",
+        "alt": "Birelle Look 15 cut-out"
+      },
+      "looks": [
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03715.webp",
+              "alt": "Birelle Look 15",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03207.webp",
+              "alt": "Birelle Look 15",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03676.webp",
+              "alt": "Birelle Look 15",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03453.webp",
+              "alt": "Birelle Look 15",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        },
+        {
+          "layout": "SPLIT",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03760.webp",
+              "alt": "Birelle Look 15",
+              "width": 1600,
+              "height": 2400
+            },
+            {
+              "path": "/images/lookbook/photos/DSC03822.webp",
+              "alt": "Birelle Look 15",
+              "width": 1600,
+              "height": 2400
+            }
+          ]
+        },
+        {
+          "layout": "FULL_BLEED",
+          "media": [
+            {
+              "path": "/images/lookbook/photos/DSC03693.webp",
+              "alt": "Birelle Look 15",
+              "width": 2400,
+              "height": 1600
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

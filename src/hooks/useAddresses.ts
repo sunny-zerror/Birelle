@@ -1,46 +1,48 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { useAddresses as useZcomAddresses } from "@zcom/storefront-kit/client";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { addressesStore, newId } from "@/lib/accountStore";
+import { useToast } from "@/components/providers/ToastProvider";
+import { fromAddress, toAddress } from "@/lib/zcom/adapters";
 import type { Address } from "@/types";
 
-const NONE: Address[] = [];
-
-// Exactly one default whenever there are addresses: the first one saved, or whichever was last marked
-const withDefault = (list: Address[], defaultId?: string) => {
-  const id = defaultId ?? list.find((a) => a.isDefault)?.id ?? list[0]?.id;
-  return list.map((a) => ({ ...a, isDefault: a.id === id }));
-};
-
-/** The signed-in user's saved addresses, default first */
+/** The signed-in customer's saved addresses from the store, default first */
 export const useAddresses = () => {
   const { user } = useAuth();
-  const all = addressesStore.useValue();
-  const stored = (user && all[user.email]) || NONE;
-  const addresses = [...stored].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+  const zcom = useZcomAddresses();
+  const toast = useToast();
 
-  const update = useCallback(
-    (fn: (prev: Address[]) => Address[]) => {
-      if (!user) return;
-      addressesStore.write((prev) => ({ ...prev, [user.email]: fn(prev[user.email] ?? []) }));
-    },
-    [user],
+  const addresses = useMemo(
+    () => zcom.addresses.map(toAddress).sort((a, b) => Number(b.isDefault) - Number(a.isDefault)),
+    [zcom.addresses],
   );
+
+  const fail = useCallback((error: unknown) => toast.error(getErrorMessage(error)), [toast]);
 
   const save = useCallback(
     (address: Omit<Address, "id"> & { id?: string }) => {
-      const id = address.id ?? newId();
-      update((prev) => {
-        const exists = prev.some((a) => a.id === id);
-        const next = exists ? prev.map((a) => (a.id === id ? { ...address, id } : a)) : [...prev, { ...address, id }];
-        return withDefault(next, address.isDefault ? id : undefined);
-      });
+      const { id, ...rest } = address;
+      // The first address saved becomes the default
+      const input = fromAddress({ ...rest, isDefault: rest.isDefault || addresses.length === 0 }, user?.email);
+      const request = id ? zcom.update(id, input) : zcom.create(input);
+      request.catch(fail);
     },
-    [update],
+    [zcom, addresses.length, user?.email, fail],
   );
 
-  const remove = useCallback((id: string) => update((prev) => withDefault(prev.filter((a) => a.id !== id))), [update]);
+  const remove = useCallback((id: string) => {
+    zcom.remove(id).catch(fail);
+  }, [zcom, fail]);
 
-  const makeDefault = useCallback((id: string) => update((prev) => withDefault(prev, id)), [update]);
+  const makeDefault = useCallback(
+    (id: string) => {
+      const current = addresses.find((a) => a.id === id);
+      if (!current) return;
+      const { id: _id, ...rest } = current;
+      zcom.update(id, fromAddress({ ...rest, isDefault: true }, user?.email)).catch(fail);
+    },
+    [addresses, zcom, user?.email, fail],
+  );
 
   return { addresses, defaultAddress: addresses.find((a) => a.isDefault), save, remove, makeDefault };
 };

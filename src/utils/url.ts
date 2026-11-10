@@ -10,6 +10,8 @@ export function normalizePath(path = "/"): string {
 }
 
 export function absoluteUrl(path = "/"): string {
+  // Store images come from the Zcom media CDN as full URLs
+  if (/^https?:\/\//i.test(path)) return path;
   const baseUrl = trimTrailingSlash(siteConfig.url || "http://localhost:3000");
   const normalizedPath = normalizePath(path);
 

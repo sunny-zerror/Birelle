@@ -1,7 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
+import { useCheckout, useNewsletter, useOrderConfirmation } from "@zcom/storefront-kit/client";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
+import { useToast } from "@/components/providers/ToastProvider";
+import { toDialCode } from "@/lib/zcom/adapters";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { RiLockLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
 import { Checkbox, RadioGroup, SelectField, TextField } from "@/components/ui/form";
@@ -14,9 +19,6 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useAddresses } from "@/hooks/useAddresses";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPhone } from "@/lib/countries";
-import type { Order } from "@/types";
-
-const EXPRESS = ["Shop Pay", "PayPal", "G Pay"];
 
 const POLICIES = [
   { label: "Refund Policy", href: "/faq#returns" },
@@ -62,15 +64,17 @@ const validate = (v: Values, payment: string): Errors => {
   need("address", "Enter an address.");
   need("postalCode", "Enter a postal code.");
   if (digits(v.phone, 15).length < 7) e.phone = "Enter a valid phone number.";
-
-  if (payment === "card") {
-    if (digits(v.cardNumber, 16).length < 15) e.cardNumber = "Enter a valid card number.";
-    const [mm] = v.expiry.split(" / ");
-    if (!/^\d{2} \/ \d{2}$/.test(v.expiry) || Number(mm) < 1 || Number(mm) > 12) e.expiry = "Enter a valid expiry date.";
-    if (v.cvc.length < 3) e.cvc = "Enter the security code.";
-    need("cardName", "Enter the name on the card.");
-  }
+  // Card details are entered in the payment app's own secure window, never on this page
+  void payment;
   return e;
+};
+
+// "+91 98765 43210" → { dial: "+91", national: "9876543210" } (falls back to the account's country)
+const splitPhone = (phone: string, fallbackDial: string) => {
+  const parsed = parsePhoneNumberFromString(phone.trim(), "IN");
+  return parsed
+    ? { dial: `+${parsed.countryCallingCode}`, national: String(parsed.nationalNumber) }
+    : { dial: fallbackDial, national: digits(phone, 15) };
 };
 
 // Section heading with an optional link on the right (e.g. "Sign in")
@@ -82,19 +86,46 @@ const SectionTitle = ({ children, aside }: { children: React.ReactNode; aside?: 
 );
 
 const Checkout = () => {
-  const { lines, subtotal, clear } = useCart();
-  const hydrated = useHydrated();
-  const { user, openLogin } = useAuth();
-  const { defaultAddress } = useAddresses();
-  const { add: addOrder } = useOrders();
+  const { lines, subtotal, cartId, clear } = useCart();
+  const { user, isReady, openLogin } = useAuth();
+  // Wait for the stored session and the bag before choosing what to show
+  const hydrated = useHydrated() && isReady;
+  const { defaultAddress, save: saveAddress } = useAddresses();
+  const { orders, add: refreshOrders } = useOrders();
+  const toast = useToast();
+  const newsletterSignup = useNewsletter();
+  const checkout = useCheckout({
+    prefill: user ? { name: `${user.firstName} ${user.lastName}`.trim(), email: user.email } : undefined,
+    themeColor: "#1f2a1f",
+  });
 
   const [values, setValues] = useState<Values>(initialValues);
   const [errors, setErrors] = useState<Errors>({});
-  const [payment, setPayment] = useState("card");
+  const [payment, setPayment] = useState("online");
   const [newsletter, setNewsletter] = useState(true);
   const [saveInfo, setSaveInfo] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  // Set once an order is placed (or when coming back from a redirect payment app with ?order=)
+  const [orderId, setOrderId] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("order"),
+  );
+  const confirmation = useOrderConfirmation(orderId);
+  const orderNumber = orderId ? (orders.find((o) => o.id === orderId)?.number ?? "") : null;
+
+  // Paid: the store empties the bag and lists the order
+  useEffect(() => {
+    if (confirmation.status !== "paid") return;
+    clear();
+    refreshOrders();
+  }, [confirmation.status, clear, refreshOrders]);
+
+  // Checkout needs an account: ask guests to sign in (their bag comes with them)
+  const askedToSignIn = useRef(false);
+  useEffect(() => {
+    if (!hydrated || user || askedToSignIn.current || orderId) return;
+    askedToSignIn.current = true;
+    openLogin({ next: null });
+  }, [hydrated, user, orderId, openLogin]);
 
   // Signed in: fill contact + shipping from the account and its default address, once per user
   const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
@@ -139,96 +170,110 @@ const Checkout = () => {
       return;
     }
 
-    // No payment backend yet — confirm locally, keep it in the account's order history, empty the bag
-    const number = `BRL-${Math.floor(100000 + Math.random() * 900000)}`;
-    if (user) {
-      const order: Order = {
-        number,
-        placedAt: new Date().toISOString(),
-        status: "processing",
-        lines: lines.map((l) => ({
-          productId: l.id,
-          title: l.product.title,
-          image: l.product.image,
-          href: l.product.href,
-          colour: l.colour,
-          size: l.size,
-          qty: l.qty,
-          price: l.product.price,
-        })),
-        subtotal,
-        shipping: 0,
-        total: subtotal,
-        payment:
-          payment === "card"
-            ? `Card ending ${digits(values.cardNumber, 16).slice(-4)}`
-            : payment === "paypal"
-              ? "PayPal"
-              : "Other payment",
-        shipTo: {
-          name: values.name,
-          line1: values.address,
-          line2: values.apartment,
-          city: values.city,
-          postalCode: values.postalCode,
-          country: values.country,
-          phone: values.phone,
-        },
-      };
-      addOrder(order);
+    if (!user) {
+      openLogin({ next: null });
+      return;
     }
-    setOrderNumber(number);
-    clear();
-    window.scrollTo({ top: 0 });
+    void placeOrder();
   };
+
+  // Zcom checkout: reserve the stock, place the order, then pay in the store's payment app
+  const placeOrder = async () => {
+    if (!user || !cartId) return;
+    const [firstname, ...rest] = values.name.trim().split(/\s+/);
+    const phone = splitPhone(values.phone, toDialCode(user.phoneCountry));
+    const shippingAddress = {
+      firstname,
+      lastname: rest.join(" "),
+      email: values.email.trim(),
+      phone: phone.national,
+      countryCode: phone.dial,
+      country: values.country,
+      city: values.city.trim(),
+      addressline1: values.address.trim(),
+      addressline2: values.apartment.trim() || undefined,
+      pincode: values.postalCode.trim(),
+    };
+
+    if (newsletter) void newsletterSignup.subscribe(values.email, values.name);
+    if (saveInfo) {
+      saveAddress({
+        label: "",
+        name: values.name.trim(),
+        phoneCountry: user.phoneCountry,
+        phone: phone.national,
+        country: values.country,
+        city: values.city.trim(),
+        line1: values.address.trim(),
+        line2: values.apartment.trim(),
+        postalCode: values.postalCode.trim(),
+        isDefault: !defaultAddress,
+      });
+    }
+
+    const session = await checkout.start({
+      cartId,
+      // Line keys are "<zcom product id>__<variant id>"
+      lines: lines.map((l) => {
+        const [productId, variantId] = l.key.split("__");
+        return { productId: productId ?? l.id, variantId: variantId || null, qty: l.qty };
+      }),
+      email: values.email.trim(),
+      shippingAddress,
+    });
+    if (!session) return;
+
+    const result = await checkout.pay();
+    if (result.step === "paid" || result.step === "unconfirmed") {
+      setOrderId(result.orderId);
+      window.scrollTo({ top: 0 });
+    } else if (result.step === "dismissed") {
+      toast.info("Payment not completed. Your order is saved — press Checkout to pay.");
+    }
+    // "redirecting": the browser is on its way to the payment app
+  };
+
+  // Checkout errors from the store, in the design's toast
+  useEffect(() => {
+    if (checkout.step === "failed" && checkout.error) {
+      toast.error(getErrorMessage({ graphQLErrors: [{ extensions: { reason: checkout.error } }] }));
+    }
+  }, [checkout.step, checkout.error, toast]);
 
   const reviewOrder = () => {
     setSummaryOpen(true);
     summaryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // The store's payment app takes every method in its own secure window
   const paymentOptions = [
     {
-      value: "card",
-      label: "Credit card",
+      value: "online",
+      label: "Pay securely online",
       content: (
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-          <TextField
-            label="Card number"
-            inputMode="numeric"
-            autoComplete="cc-number"
-            className="col-span-2"
-            {...field("cardNumber", maskCard)}
-          />
-          <TextField label="Expiry (MM / YY)" inputMode="numeric" autoComplete="cc-exp" {...field("expiry", maskExpiry)} />
-          <TextField label="Security code" inputMode="numeric" autoComplete="cc-csc" {...field("cvc", (v) => digits(v, 4))} />
-          <TextField label="Name on card" autoComplete="cc-name" className="col-span-2" {...field("cardName")} />
-        </div>
+        <p className="pt-4 text-xs   text-muted">
+          UPI, cards, net banking and wallets. You&apos;ll complete payment in a secure window after pressing Checkout.
+        </p>
       ),
-    },
-    {
-      value: "paypal",
-      label: "PayPal",
-      content: <p className="pt-4 text-xs   text-muted">You&apos;ll be redirected to PayPal to complete your purchase securely.</p>,
-    },
-    {
-      value: "other",
-      label: "Other Payments",
-      content: <p className="pt-4 text-xs   text-muted">UPI, net banking and wallets are available on the next step.</p>,
     },
   ];
 
   // Wait for the stored cart before choosing between the form and the empty state
   if (!hydrated) return <CheckoutSkeleton />;
 
-  if (orderNumber) {
+  if (orderId) {
+    const paid = confirmation.status === "paid";
     return (
       <section className="checkout-done flex min-h-screen flex-col items-center justify-center bg-white px-gutter py-section text-center">
         <div className="flex animate-panel-in flex-col items-center">
-          <p className="text-xs uppercase tracking-wide text-forest">Order {orderNumber}</p>
+          {orderNumber && <p className="text-xs uppercase tracking-wide text-forest">Order {orderNumber}</p>}
           <h1 className="primary-font mt-4 text-3xl font-normal uppercase text-ink">Thank you</h1>
           <p className="mt-4 max-w-[22rem] text-sm   text-muted">
-            Your order is confirmed. A confirmation has been sent to {values.email}.
+            {paid
+              ? `Your order is confirmed.${values.email ? ` A confirmation has been sent to ${values.email}.` : ""}`
+              : confirmation.status === "checking"
+                ? "We're confirming your payment. This takes a few seconds."
+                : "Your payment hasn't been confirmed yet. We'll email you as soon as it is — no need to pay again."}
           </p>
           <Button href="/shop" className="mt-10">
             Continue shopping
@@ -264,29 +309,7 @@ const Checkout = () => {
         <div className="mx-auto w-full max-w-[28rem]">
           <h1 className="sr-only">Checkout</h1>
 
-          {/* Express checkout */}
-          <fieldset className="border border-ink/30 px-3 pb-3 pt-2">
-            <legend className="mx-auto px-2 text-sm text-forest">Express checkout</legend>
-            <div className="grid grid-cols-3 gap-2">
-              {EXPRESS.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  className="h-10 bg-neutral-200 text-xs font-medium text-ink/70 transition-colors duration-300 hover:bg-neutral-300"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <div aria-hidden="true" className="mx-auto mt-5 flex w-2/5 items-center gap-2 text-[0.625rem] uppercase text-muted">
-            <span className="h-px flex-1 bg-ink/20" />
-            Or
-            <span className="h-px flex-1 bg-ink/20" />
-          </div>
-
-          <form ref={formRef} onSubmit={submit} noValidate className="mt-6">
+          <form ref={formRef} onSubmit={submit} noValidate>
             {/* Contact */}
             <section aria-labelledby="checkout-contact">
               <SectionTitle
@@ -356,9 +379,17 @@ const Checkout = () => {
             <div className="mt-8 flex flex-col gap-3">
               <button
                 type="submit"
-                className="secondary-font h-12 w-full bg-forest text-sm tracking-wide text-white transition-colors duration-500 hover:bg-ink"
+                disabled={checkout.isBusy}
+                aria-busy={checkout.isBusy}
+                className="secondary-font h-12 w-full bg-forest text-sm tracking-wide text-white transition-colors duration-500 hover:bg-ink disabled:cursor-wait disabled:opacity-70"
               >
-                Checkout
+                {checkout.step === "reserving" || checkout.step === "placing"
+                  ? "Reserving your pieces…"
+                  : checkout.step === "paying" || checkout.step === "verifying"
+                    ? "Confirming payment…"
+                    : user
+                      ? "Checkout"
+                      : "Sign in to checkout"}
               </button>
               <button
                 type="button"
@@ -385,6 +416,8 @@ const Checkout = () => {
         ref={summaryRef}
         lines={lines}
         subtotal={subtotal}
+        shipping={checkout.pricing?.shipping ?? null}
+        total={checkout.pricing?.total ?? null}
         expanded={summaryOpen}
         onToggle={() => setSummaryOpen((o) => !o)}
       />

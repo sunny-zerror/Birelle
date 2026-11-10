@@ -4,15 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
 import { RiHeartFill, RiHeartLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
-import { formatPrice, products } from "@/data/products";
+import { formatPrice } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import type { Product } from "@/types";
 import CuratedWaveCanvas from "./CuratedWaveCanvas";
 
-// Listed twice so the loop always has cards waiting off-screen on both sides
-const slides = [...products, ...products];
-const FEATURED = products.map((p) => p.featured);
-const COUNT = slides.length;
 const START = 3;
 
 const AUTOPLAY_MS = 2500;
@@ -21,7 +18,7 @@ const DRAG_EASE = 0.35; // tighter follow while the pointer is down
 const THROW = 180; // ms of release velocity carried into the snap
 
 // Wraps a slide's distance from the centre into [-COUNT/2, COUNT/2) so the loop never ends
-const wrap = (d: number) => ((((d + COUNT / 2) % COUNT) + COUNT) % COUNT) - COUNT / 2;
+const wrap = (d: number, COUNT: number) => ((((d + COUNT / 2) % COUNT) + COUNT) % COUNT) - COUNT / 2;
 
 type CardProps = { product: Product; isWished: boolean; onToggle: () => void };
 
@@ -66,7 +63,11 @@ const Card = ({ product, isWished, onToggle }: CardProps) => (
   </article>
 );
 
-const HomeCurated = () => {
+const HomeCuratedCarousel = ({ products }: { products: Product[] }) => {
+  // Listed twice so the loop always has cards waiting off-screen on both sides
+  const slides = [...products, ...products];
+  const FEATURED = products.map((p) => p.featured);
+  const COUNT = slides.length;
   const { has, toggle } = useWishlist();
   const viewportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -127,7 +128,7 @@ const HomeCurated = () => {
 
       els.forEach((el, i) => {
         if (!el) return;
-        el.style.transform = `translate3d(${wrap(i - current) * step}px, 0, 0)`;
+        el.style.transform = `translate3d(${wrap(i - current, COUNT) * step}px, 0, 0)`;
       });
       positionRef.current = current;
       waveWakeRef.current?.();
@@ -298,6 +299,14 @@ const HomeCurated = () => {
       </div>
     </section>
   );
+};
+
+// The store's newest pieces (from Zcom); hidden until the catalogue has any
+const HomeCurated = () => {
+  const { products } = useCatalog();
+  const curated = products.slice(0, 8);
+  if (curated.length === 0) return null;
+  return <HomeCuratedCarousel products={curated} />;
 };
 
 export default HomeCurated;

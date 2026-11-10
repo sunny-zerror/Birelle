@@ -7,6 +7,7 @@ import { PasswordField, PhoneField, TextField } from "@/components/ui/form";
 import { siteConfig } from "@/config/site";
 import { useToast } from "@/components/providers/ToastProvider";
 import { useAuth, type AuthMode } from "@/components/providers/AuthProvider";
+import { useAuth as useZcomAuth } from "@zcom/storefront-kit/client";
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
@@ -76,6 +77,7 @@ const LoginForm = ({ onSwitch }: { onSwitch: () => void }) => {
   const [pending, setPending] = useState(false);
   const toast = useToast();
   const { signIn } = useAuth();
+  const zcomAuth = useZcomAuth();
 
   const set = (key: keyof LoginValues) => (value: string) => {
     setValues((v) => ({ ...v, [key]: value }));
@@ -125,6 +127,15 @@ const LoginForm = ({ onSwitch }: { onSwitch: () => void }) => {
           />
           <button
             type="button"
+            onClick={async () => {
+              // The store emails a reset link (to /reset-password); the answer is the same either way
+              if (!/^\S+@\S+\.\S+$/.test(values.email.trim())) {
+                setErrors((e) => ({ ...e, email: "Enter your email first, then press “Forgot your password?”" }));
+                return;
+              }
+              await zcomAuth.requestPasswordReset(values.email).catch(() => undefined);
+              toast.success("If an account exists for this email, we've sent a reset link.");
+            }}
             className="mt-3 text-xs text-ink underline underline-offset-4 transition-opacity hover:opacity-60"
           >
             Forgot your password?

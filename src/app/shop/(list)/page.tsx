@@ -1,10 +1,14 @@
 import { PlpHero, PlpGrid } from "@/components/sections/allproducts";
 import JsonLd from "@/components/seo/JsonLd";
-import { products } from "@/data/products";
 import { createPageMetadata } from "@/lib/seo";
 import { breadcrumbSchema, productListSchema } from "@/lib/schema";
+import { getCatalog } from "@/lib/zcom/catalog";
 
-const AllProductsPage = () => {
+// Catalogue from the Zcom store, refreshed every minute
+export const revalidate = 60;
+
+const AllProductsPage = async () => {
+  const { products } = await getCatalog();
   return (
     <>
       <JsonLd

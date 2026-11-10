@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { products } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogProvider";
 import { useLoader } from "@/components/providers/LoaderProvider";
 
 gsap.registerPlugin(useGSAP);
@@ -12,6 +12,8 @@ const DURATION = 3; // seconds the counter runs for
 const STEP = 0.22; // seconds between image swaps
 
 const Loader = () => {
+  // The store's newest pieces cycle in the frame
+  const products = useCatalog().products.slice(0, 8);
   const { setLoaded } = useLoader();
   const [isDone, setIsDone] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

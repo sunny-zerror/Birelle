@@ -7,17 +7,24 @@ import JsonLd from "@/components/seo/JsonLd";
 import { siteConfig } from "@/config/site";
 import { createRootMetadata } from "@/lib/seo";
 import { organizationSchema, websiteSchema } from "@/lib/schema";
+import { getCatalog, getLooks } from "@/lib/zcom/catalog";
+
+// Catalogue from the Zcom store, refreshed every minute
+export const revalidate = 60;
 
 export const experimental = {
   viewTransition: true,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [{ products, categories }, looks] = await Promise.all([getCatalog(), getLooks()]);
   return (
     <html lang={siteConfig.language}>
       <body suppressHydrationWarning>
         <JsonLd data={[organizationSchema(), websiteSchema()]} />
-        <SiteLayout>{children}</SiteLayout>
+        <SiteLayout products={products} categories={categories} looks={looks}>
+          {children}
+        </SiteLayout>
       </body>
     </html>
   );

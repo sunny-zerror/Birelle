@@ -1,23 +1,20 @@
-import { useCallback } from "react";
-import { useAuth } from "@/components/providers/AuthProvider";
-import { ordersStore } from "@/lib/accountStore";
+import { useCallback, useMemo } from "react";
+import { useOrders as useZcomOrders } from "@zcom/storefront-kit/client";
+import { useCatalog } from "@/components/providers/CatalogProvider";
+import { toOrder } from "@/lib/zcom/adapters";
 import type { Order } from "@/types";
 
-const NONE: Order[] = [];
-
-/** The signed-in user's orders, newest first */
+/** The signed-in customer's orders from the store, newest first */
 export const useOrders = () => {
-  const { user } = useAuth();
-  const all = ordersStore.useValue();
-  const orders = (user && all[user.email]) || NONE;
+  const { getByZcomId } = useCatalog();
+  const zcom = useZcomOrders({ limit: 50 });
 
-  const add = useCallback(
-    (order: Order) => {
-      if (!user) return;
-      ordersStore.write((prev) => ({ ...prev, [user.email]: [order, ...(prev[user.email] ?? [])] }));
-    },
-    [user],
-  );
+  const orders = useMemo<Order[]>(() => zcom.orders.map((o) => toOrder(o, getByZcomId)), [zcom.orders, getByZcomId]);
 
-  return { orders, add };
+  // Orders are created by the store at checkout — re-read the list after one
+  const add = useCallback((_order?: Order) => {
+    void zcom.refetch();
+  }, [zcom]);
+
+  return { orders, add, loading: zcom.loading };
 };

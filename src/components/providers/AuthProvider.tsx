@@ -3,16 +3,10 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { useTransitionRouter } from "next-view-transitions";
 import type { CountryCode } from "libphonenumber-js";
+import { useAuth as useZcomAuth, useProfile } from "@zcom/storefront-kit/client";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
 import { useToast } from "@/components/providers/ToastProvider";
-import {
-  accountsStore,
-  addressesStore,
-  emailKey,
-  newId,
-  ordersStore,
-  sessionStore,
-  wishlistsStore,
-} from "@/lib/accountStore";
+import { toDialCode, toUser } from "@/lib/zcom/adapters";
 import type { User } from "@/types";
 
 export type AuthMode = "login" | "signup";
@@ -38,6 +32,8 @@ type OpenLoginOptions = {
 
 type AuthContextValue = {
   user: User | null;
+  /** False while a returning customer's session is being restored */
+  isReady: boolean;
   isLoginOpen: boolean;
   /** Bumps on every open, so the forms start fresh */
   openCount: number;
@@ -58,10 +54,21 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Friendlier copy for the drawer than the kit defaults
+const AUTH_MESSAGES: Record<string, string> = {
+  UNAUTHENTICATED: "That email and password don't match an account.",
+  CONFLICT: "An account with this email already exists.",
+};
+
+// Session, profile and sign in/out run on the Zcom store (via @zcom/storefront-kit)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const user = sessionStore.useValue();
+  const zcom = useZcomAuth();
+  const profile = useProfile();
   const router = useTransitionRouter();
   const toast = useToast();
+
+  const user = useMemo(() => (zcom.isLoggedIn && profile.profile ? toUser(profile.profile) : null), [zcom.isLoggedIn, profile.profile]);
+  const isReady = zcom.isReady && (!zcom.isLoggedIn || !!profile.profile || (!profile.loading && !!profile.error));
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [loginMode, setLoginMode] = useState<AuthMode>("login");
@@ -81,101 +88,97 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoginOpen(false);
   }, []);
 
-  // Shared tail of sign in / sign up: store the session, close the drawer, carry on where they were headed
-  const complete = useCallback(
-    (account: User) => {
-      sessionStore.write(() => account);
-      const { next, onSuccess } = pending.current;
-      pending.current = {};
-      setIsLoginOpen(false);
-      onSuccess?.();
-      if (next) router.push(next);
-    },
-    [router],
-  );
+  // Shared tail of sign in / sign up: load the profile, close the drawer, carry on where they were headed
+  const complete = useCallback(async (): Promise<AuthResult> => {
+    const { data } = await profile.refetch();
+    const account = data?.getMyProfile ? toUser(data.getMyProfile) : null;
+    if (!account) return { ok: false, error: "Signed in, but your profile couldn't be loaded. Please refresh." };
+    const { next, onSuccess } = pending.current;
+    pending.current = {};
+    setIsLoginOpen(false);
+    onSuccess?.();
+    if (next) router.push(next);
+    return { ok: true, user: account };
+  }, [profile, router]);
 
-  // TODO: replace with the auth API. Demo: any password works for an account created on this device.
   const signIn = useCallback(
-    async (email: string, _password: string): Promise<AuthResult> => {
-      const account = accountsStore.read()[emailKey(email)];
-      if (!account) return { ok: false, error: "We couldn't find an account with that email." };
-      complete(account);
-      return { ok: true, user: account };
+    async (email: string, password: string): Promise<AuthResult> => {
+      try {
+        await zcom.login(email, password);
+        return await complete();
+      } catch (error) {
+        return { ok: false, error: getErrorMessage(error, AUTH_MESSAGES) };
+      }
     },
-    [complete],
+    [zcom, complete],
   );
 
-  // TODO: replace with the auth API — the password is sent there and never kept in the browser
   const signUp = useCallback(
-    async ({ password: _password, ...data }: SignUpData): Promise<AuthResult> => {
-      const key = emailKey(data.email);
-      if (accountsStore.read()[key]) return { ok: false, error: "An account with this email already exists." };
-
-      const account: User = {
-        ...data,
-        id: newId(),
-        email: key,
-        firstName: data.firstName.trim(),
-        lastName: data.lastName.trim(),
-        createdAt: new Date().toISOString(),
-        marketingEmails: true,
-        smsUpdates: false,
-      };
-      accountsStore.write((all) => ({ ...all, [key]: account }));
-      complete(account);
-      return { ok: true, user: account };
+    async ({ password, ...data }: SignUpData): Promise<AuthResult> => {
+      try {
+        await zcom.signup({
+          email: data.email.trim(),
+          password,
+          firstName: data.firstName.trim(),
+          lastName: data.lastName.trim(),
+          phoneNumber: data.phone,
+          countryCode: toDialCode(data.phoneCountry),
+          acceptsMarketing: true,
+        });
+        return await complete();
+      } catch (error) {
+        return { ok: false, error: getErrorMessage(error, AUTH_MESSAGES) };
+      }
     },
-    [complete],
+    [zcom, complete],
   );
 
-  const updateUser = useCallback<AuthContextValue["updateUser"]>((patch) => {
-    const current = sessionStore.read();
-    if (!current) return;
-    const updated = { ...current, ...patch };
-    sessionStore.write(() => updated);
-    accountsStore.write((all) => ({ ...all, [current.email]: updated }));
-  }, []);
+  const updateUser = useCallback<AuthContextValue["updateUser"]>(
+    (patch) => {
+      if (!user) return;
+      const next = { ...user, ...patch };
+      profile
+        .update({
+          firstName: next.firstName,
+          lastName: next.lastName,
+          phoneNumber: next.phone,
+          countryCode: toDialCode(next.phoneCountry),
+          emailSubscribedStatus: next.marketingEmails ? 1 : 0,
+        })
+        .catch((error) => toast.error(getErrorMessage(error)));
+    },
+    [user, profile, toast],
+  );
 
   const signOut = useCallback(() => {
     signingOut.current = true;
     setTimeout(() => (signingOut.current = false), 1500);
     router.push("/");
-    sessionStore.write(() => null);
+    void zcom.logout();
     toast.info("You've been signed out");
-  }, [router, toast]);
+  }, [router, toast, zcom]);
 
+  // The store can't delete accounts from the website yet — the team handles it on request
   const deleteAccount = useCallback(() => {
-    const current = sessionStore.read();
-    if (!current) return;
-    const drop = <T,>(all: Record<string, T>) => {
-      const { [current.email]: _removed, ...rest } = all;
-      return rest;
-    };
-    accountsStore.write(drop);
-    ordersStore.write(drop);
-    addressesStore.write(drop);
-    wishlistsStore.write(drop);
-    signingOut.current = true;
-    setTimeout(() => (signingOut.current = false), 1500);
-    router.push("/");
-    sessionStore.write(() => null);
-    toast.info("Your account has been deleted");
+    toast.info("To delete your account, please contact us and we'll take care of it.");
+    router.push("/contact");
   }, [router, toast]);
 
   const isSigningOut = useCallback(() => signingOut.current, []);
 
   const requireAuth = useCallback(
     (path: string) => (e?: React.MouseEvent) => {
-      if (sessionStore.read()) return; // let the link navigate
+      if (zcom.isLoggedIn) return; // let the link navigate
       e?.preventDefault();
       openLogin({ next: path });
     },
-    [openLogin],
+    [openLogin, zcom.isLoggedIn],
   );
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
+      isReady,
       isLoginOpen,
       openCount,
       loginMode,
@@ -190,7 +193,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isSigningOut,
       requireAuth,
     }),
-    [user, isLoginOpen, openCount, loginMode, openLogin, closeLogin, signIn, signUp, updateUser, signOut, deleteAccount, isSigningOut, requireAuth],
+    [user, isReady, isLoginOpen, openCount, loginMode, openLogin, closeLogin, signIn, signUp, updateUser, signOut, deleteAccount, isSigningOut, requireAuth],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -201,3 +204,4 @@ export const useAuth = () => {
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
   return ctx;
 };
+

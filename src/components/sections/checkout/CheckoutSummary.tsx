@@ -2,28 +2,42 @@
 
 import { useState } from "react";
 import { RiArrowDownSLine } from "@remixicon/react";
+import { getErrorMessage } from "@zcom/storefront-kit/core";
 import { TextField } from "@/components/ui/form";
-import type { CartLine } from "@/components/providers/CartProvider";
+import { useCart, type CartLine } from "@/components/providers/CartProvider";
+import { siteConfig } from "@/config/site";
+import { formatMoney as money } from "@/data/products";
 
 type CheckoutSummaryProps = {
   lines: CartLine[];
   subtotal: number;
+  /** From the reserved checkout; null until then */
+  shipping?: number | null;
+  total?: number | null;
   /** Mobile only — the summary collapses into a bar above the form */
   expanded: boolean;
   onToggle: () => void;
   ref?: React.Ref<HTMLElement>;
 };
 
-const money = (n: number) => `$${n.toFixed(2)}`;
-
-const CheckoutSummary = ({ lines, subtotal, expanded, onToggle, ref }: CheckoutSummaryProps) => {
+const CheckoutSummary = ({ lines, subtotal, shipping = null, total = null, expanded, onToggle, ref }: CheckoutSummaryProps) => {
+  const { applyCode: apply, removeCode, promotionCode, discount } = useCart();
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
 
-  // No discount codes exist yet — every code is rejected until promotions are wired up
-  const applyCode = (e: React.FormEvent) => {
+  // Discount codes are checked by the store
+  const applyCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCodeError(code.trim() ? "This discount code isn't valid." : "Enter a discount code.");
+    if (!code.trim()) {
+      setCodeError("Enter a discount code.");
+      return;
+    }
+    try {
+      await apply(code.trim());
+      setCode("");
+    } catch (error) {
+      setCodeError(getErrorMessage(error));
+    }
   };
 
   return (
@@ -69,7 +83,7 @@ const CheckoutSummary = ({ lines, subtotal, expanded, onToggle, ref }: CheckoutS
                     </div>
                     <div className="min-w-0 flex-1 pt-1">
                       <p className="primary-font text-[0.9375rem] leading-snug text-ink">{line.product.title}</p>
-                      <p className="mt-1.5 text-xs text-muted">{line.colour} / {line.size}</p>
+                      <p className="mt-1.5 text-xs text-muted">{[line.colour, line.size].filter(Boolean).join(" / ")}</p>
                     </div>
                     <p className="pt-1 text-sm tabular-nums text-ink">{money(line.product.price * line.qty)}</p>
                   </li>
@@ -105,15 +119,29 @@ const CheckoutSummary = ({ lines, subtotal, expanded, onToggle, ref }: CheckoutS
                   <dt>Subtotal</dt>
                   <dd className="tabular-nums">{money(subtotal)}</dd>
                 </div>
+                {promotionCode && (
+                  <div className="flex justify-between">
+                    <dt>
+                      Discount <span className="text-xs text-muted">({promotionCode})</span>{" "}
+                      <button type="button" onClick={() => void removeCode()} className="text-xs underline underline-offset-2">
+                        Remove
+                      </button>
+                    </dt>
+                    <dd className="tabular-nums">−{money(discount)}</dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt>Shipping</dt>
-                  <dd className="uppercase">Free</dd>
+                  {/* Known once the pieces are reserved at checkout */}
+                  <dd className={shipping === 0 ? "uppercase" : "tabular-nums"}>
+                    {shipping == null ? <span className="text-xs text-muted">Calculated at checkout</span> : shipping === 0 ? "Free" : money(shipping)}
+                  </dd>
                 </div>
                 <div className="mt-2 flex items-baseline justify-between border-t border-ink/15 pt-5">
                   <dt className="text-base">Total</dt>
                   <dd className="tabular-nums">
-                    <span className="mr-1.5 text-xs text-muted">USD</span>
-                    <span className="text-base">{money(subtotal)}</span>
+                    <span className="mr-1.5 text-xs text-muted">{siteConfig.currency}</span>
+                    <span className="text-base">{money(total ?? subtotal)}</span>
                   </dd>
                 </div>
               </dl>

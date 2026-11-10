@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
 import { RiCloseLine, RiSearchLine } from "@remixicon/react";
-import { formatPrice, products } from "@/data/products";
+import { formatPrice } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogProvider";
 import type { Product } from "@/types";
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -33,6 +34,7 @@ const ResultCard = ({ product, onClose }: { product: Product; onClose: () => voi
 type Props = { isOpen: boolean; onClose: () => void };
 
 const SearchOverlay = ({ isOpen, onClose }: Props) => {
+  const { products } = useCatalog();
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 

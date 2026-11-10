@@ -7,13 +7,16 @@ import { Flip } from "gsap/all";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { RiEqualizerLine } from "@remixicon/react";
-import { categories, formatPrice, products } from "@/data/products";
+import { SIZES, formatPrice } from "@/data/products";
 import type { Product } from "@/types";
 import { ImageSkeleton } from "@/components/ui/skeleton";
+import { useCatalog } from "@/components/providers/CatalogProvider";
+import { ONE_SIZE, isSizeAvailable } from "@/lib/zcom/adapters";
 
 gsap.registerPlugin(Flip, ScrollTrigger, useGSAP);
 
-type CategoryKey = (typeof categories)[number]["key"];
+// A store category slug, or "all"
+type CategoryKey = string;
 
 const sorts = [
   { key: "featured", label: "Featured" },
@@ -24,8 +27,15 @@ const sorts = [
 
 type SortKey = (typeof sorts)[number]["key"];
 
-// Dummy — visual only until real stock data exists
-const sizes = ["XS", "S", "M", "L", "XL"];
+// Every size the catalogue carries, in the usual order first
+const sizesIn = (products: Product[]) => {
+  const all = new Set(products.flatMap((p) => p.sizes ?? []).filter((s) => s !== ONE_SIZE));
+  return [...SIZES.filter((s) => all.has(s)), ...[...all].filter((s) => !SIZES.includes(s))];
+};
+
+// In stock in at least one of the chosen sizes
+const hasSize = (product: Product, selected: string[]) =>
+  selected.length === 0 || selected.some((s) => product.sizes?.includes(s) && isSizeAvailable(product, s));
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
@@ -38,6 +48,8 @@ const sortProducts = (list: Product[], sort: SortKey) => {
 };
 
 const PlpGrid = () => {
+  const { products, categories } = useCatalog();
+  const sizes = sizesIn(products);
   const [category, setCategory] = useState<CategoryKey>("all");
   const [sort, setSort] = useState<SortKey>("featured");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -50,7 +62,7 @@ const PlpGrid = () => {
   const flipState = useRef<Flip.FlipState | null>(null);
 
   const ordered = sortProducts(products, sort);
-  const visibleCount = ordered.filter((p) => category === "all" || p.category === category).length;
+  const visibleCount = ordered.filter((p) => (category === "all" || p.category === category) && hasSize(p, selectedSizes)).length;
 
   // Snapshot card positions before any change so Flip can animate from them
   const captureFlip = () => {
@@ -255,7 +267,7 @@ const PlpGrid = () => {
           className="plp-grid__list relative mt-stack grid grid-cols-2 gap-x-4 gap-y-12 md:mt-20 md:grid-cols-4 md:gap-x-8 md:gap-y-20 min-h-[32rem]"
         >
           {ordered.map((product) => {
-            const shown = category === "all" || product.category === category;
+            const shown = (category === "all" || product.category === category) && hasSize(product, selectedSizes);
             return (
               <li
                 key={product.id}

@@ -7,7 +7,8 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { RiRefreshLine } from "@remixicon/react";
 import { useLoader } from "@/components/providers/LoaderProvider";
-import { LOOKBOOK_SEASON, LOOKBOOK_TITLE, looks } from "@/data/lookbook";
+import { LOOKBOOK_SEASON, LOOKBOOK_TITLE } from "@/data/lookbook";
+import { useCatalog } from "@/components/providers/CatalogProvider";
 import { Playground, loadGarmentAsset, type Bounds, type Fabric, type GarmentAsset } from "@/lib/cloth";
 import GarmentLayer from "./GarmentLayer";
 import { CollectionDialog, LookDialog } from "./LookbookDialogs";
@@ -15,7 +16,6 @@ import "@/styles/lookbook.css";
 
 gsap.registerPlugin(useGSAP);
 
-const RAIN_ORDER = looks.map((_, i) => i);
 const HINT_MS = 4800;
 const NOTE_TEXT = "Pick up a piece to view the full look";
 const DROP_PAD = 40; // px of forgiveness around the note when dropping
@@ -30,6 +30,9 @@ type Hint = { shown: boolean; interacted: boolean; lastCheck: number; timer: num
 // Interactive cloth lookbook — garments rain onto the title, get picked up and
 // dropped on the note to open that look's page
 const LookbookHero = () => {
+  // Looks from the Zcom store (the designer's built-in looks until the store has some)
+  const { looks } = useCatalog();
+  const RAIN_ORDER = looks.map((_, i) => i);
   const { isLoaded } = useLoader();
   const router = useTransitionRouter();
 

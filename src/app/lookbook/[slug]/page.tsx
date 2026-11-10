@@ -1,21 +1,25 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { LookbookDetail } from "@/components/sections/lookbook";
-import { getLook, looks } from "@/data/lookbook";
 import JsonLd from "@/components/seo/JsonLd";
 import { createMetadata } from "@/lib/seo";
 import { breadcrumbSchema, lookSchema } from "@/lib/schema";
+import { getLookDetail } from "@/lib/zcom/catalog";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return looks.map((look) => ({ slug: look.slug }));
-}
+// Looks come from the Zcom store's lookbooks, refreshed every minute
+export const revalidate = 60;
 
-export const dynamicParams = false;
+// Rendered on first visit, then cached (no build-time burst against the store API)
+export async function generateStaticParams() {
+  return [];
+}
 
 const LookPage = async ({ params }: Params) => {
   const { slug } = await params;
-  const look = getLook(slug);
+  const { look, redirectTo } = await getLookDetail(slug);
+  // A renamed lookbook keeps its old links working
+  if (redirectTo) permanentRedirect(`/lookbook/${redirectTo}`);
   if (!look) notFound();
 
   return (
@@ -38,14 +42,14 @@ export default LookPage;
 
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
-  const look = getLook(slug);
+  const { look } = await getLookDetail(slug);
   if (!look) return {};
 
   return createMetadata({
-    title: `${look.title} — Lookbook ${look.season}`,
-    description: look.story[0],
+    title: look.season ? `${look.title} — Lookbook ${look.season}` : `${look.title} — Lookbook`,
+    description: look.story[0] ?? look.title,
     path: `/lookbook/${look.slug}`,
-    image: look.photos[0]?.src,
+    image: look.photos[0]?.src ?? look.src,
     imageAlt: `${look.title} from the Birelle lookbook`,
   });
 }
