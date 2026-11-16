@@ -13,6 +13,9 @@ if [ -n "${GITHUB_TOKEN:-}" ]; then
   # The lockfile records the kit as git+ssh://git@github.com/…: fetch it over HTTPS with the token
   git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
   git config --global --add url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "git@github.com:"
+  # npm may also clone over plain https://github.com/ once GitHub's tarball download answers 404 (a
+  # private repo always does): rewrite that form too (kit README "Build token")
+  git config --global --add url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
   echo "install-kit: using GITHUB_TOKEN"
 elif [ -n "${KIT_DEPLOY_KEY_B64:-}" ]; then
   mkdir -p ~/.ssh
