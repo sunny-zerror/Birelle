@@ -30,10 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files: none are committed; production values live in the hosting dashboard (Vercel / Amplify)
 .env*
-# Public production values only (secrets live in the hosting dashboard)
-!.env.production
 
 # vercel
 .vercel
