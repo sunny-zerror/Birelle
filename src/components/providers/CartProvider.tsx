@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { useAnalytics, useCart as useZcomCart } from "@zcom/storefront-kit/client";
+import { useAdsTracking, useAnalytics, useCart as useZcomCart } from "@zcom/storefront-kit/client";
 import { getErrorMessage } from "@zcom/storefront-kit/core";
 import type { CartLine as ZcomCartLine } from "@zcom/storefront-kit/client";
 import { useCatalog } from "@/components/providers/CatalogProvider";
@@ -57,6 +57,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const zcom = useZcomCart();
   const { getProduct, getByZcomId } = useCatalog();
   const analytics = useAnalytics();
+  const ads = useAdsTracking();
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => setIsOpen(true), []);
@@ -75,10 +76,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         .then(() => {
           const variant = { _id: variantId, sku: null, title: null, optionValues: null, price: product.price, compareAtPrice: null, status: null, availability: null, availableQuantity: null };
           analytics.addToCart({ _id: product.zcom!.productId, name: product.title, variants: [variant], productOptions: [] }, variant, qty);
+          // Meta / Google Ads add-to-cart (sent only with the shopper's ads consent); ids are variant ids
+          ads.trackAddToCart({ id: variantId ?? product.zcom!.productId, quantity: qty, price: product.price });
         })
         .catch(fail);
     },
-    [getProduct, zcom, analytics, fail],
+    [getProduct, zcom, analytics, ads, fail],
   );
 
   const findLine = useCallback((key: string) => zcom.lines.find((l) => keyOf(l) === key), [zcom.lines]);

@@ -1,3 +1,4 @@
+import { CONSENT_DEFAULT_SCRIPT } from "@zcom/storefront-kit/core";
 import type { Metadata, Viewport } from "next";
 import "lenis/dist/lenis.css";
 import "../styles/globals.css";
@@ -19,7 +20,13 @@ export const experimental = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [{ products, categories }, looks] = await Promise.all([getCatalog(), getLooks()]);
   return (
-    <html lang={siteConfig.language}>
+    // suppressHydrationWarning: the consent script below stamps data-zcom-consent on <html> before React loads
+    <html lang={siteConfig.language} suppressHydrationWarning>
+      <head>
+        {/* Zcom consent defaults (a returning shopper's stored choice) before any tag loads; a plain
+            <script>, since next/script's beforeInteractive runs after the first paint (kit README §4) */}
+        <script id="zcom-consent" dangerouslySetInnerHTML={{ __html: CONSENT_DEFAULT_SCRIPT }} />
+      </head>
       <body suppressHydrationWarning>
         <JsonLd data={[organizationSchema(), websiteSchema()]} />
         <SiteLayout products={products} categories={categories} looks={looks}>

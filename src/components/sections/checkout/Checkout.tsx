@@ -2,8 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
-import { useCheckout, useNewsletter, useOrderConfirmation } from "@zcom/storefront-kit/client";
-import { getErrorMessage } from "@zcom/storefront-kit/core";
+import {
+  useAdsTracking,
+  useCheckout,
+  useNewsletter,
+  useOrderConfirmation,
+  useStoreCheckoutOptions,
+} from "@zcom/storefront-kit/client";
+import { getErrorMessage, orderStatusPath } from "@zcom/storefront-kit/core";
 import { useToast } from "@/components/providers/ToastProvider";
 import { toDialCode } from "@/lib/zcom/adapters";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
@@ -98,6 +104,9 @@ const Checkout = () => {
     prefill: user ? { name: `${user.firstName} ${user.lastName}`.trim(), email: user.email } : undefined,
     themeColor: "#1f2a1f",
   });
+  // Guests may check out without an account unless the store requires one (kit 1.1.0)
+  const { allowsGuest } = useStoreCheckoutOptions();
+  const ads = useAdsTracking();
 
   const [values, setValues] = useState<Values>(initialValues);
   const [errors, setErrors] = useState<Errors>({});
@@ -119,13 +128,13 @@ const Checkout = () => {
     refreshOrders();
   }, [confirmation.status, clear, refreshOrders]);
 
-  // Checkout needs an account: ask guests to sign in (their bag comes with them)
+  // A store that requires accounts: ask guests to sign in (their bag comes with them)
   const askedToSignIn = useRef(false);
   useEffect(() => {
-    if (!hydrated || user || askedToSignIn.current || orderId) return;
+    if (!hydrated || user || allowsGuest || askedToSignIn.current || orderId) return;
     askedToSignIn.current = true;
     openLogin({ next: null });
-  }, [hydrated, user, orderId, openLogin]);
+  }, [hydrated, user, allowsGuest, orderId, openLogin]);
 
   // Signed in: fill contact + shipping from the account and its default address, once per user
   const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
@@ -170,18 +179,19 @@ const Checkout = () => {
       return;
     }
 
-    if (!user) {
+    if (!user && !allowsGuest) {
       openLogin({ next: null });
       return;
     }
     void placeOrder();
   };
 
-  // Zcom checkout: reserve the stock, place the order, then pay in the store's payment app
+  // Zcom checkout: reserve the stock, place the order, then pay in the store's payment app.
+  // Signed in: the account's checkout (start); a guest: startGuest with the contact details.
   const placeOrder = async () => {
-    if (!user || !cartId) return;
+    if (!cartId) return;
     const [firstname, ...rest] = values.name.trim().split(/\s+/);
-    const phone = splitPhone(values.phone, toDialCode(user.phoneCountry));
+    const phone = splitPhone(values.phone, user ? toDialCode(user.phoneCountry) : "+91");
     const shippingAddress = {
       firstname,
       lastname: rest.join(" "),
@@ -196,7 +206,7 @@ const Checkout = () => {
     };
 
     if (newsletter) void newsletterSignup.subscribe(values.email, values.name);
-    if (saveInfo) {
+    if (saveInfo && user) {
       saveAddress({
         label: "",
         name: values.name.trim(),
@@ -211,16 +221,29 @@ const Checkout = () => {
       });
     }
 
-    const session = await checkout.start({
-      cartId,
-      // Line keys are "<zcom product id>__<variant id>"
-      lines: lines.map((l) => {
-        const [productId, variantId] = l.key.split("__");
-        return { productId: productId ?? l.id, variantId: variantId || null, qty: l.qty };
-      }),
-      email: values.email.trim(),
-      shippingAddress,
+    // Line keys are "<zcom product id>__<variant id>"
+    const items = lines.map((l) => {
+      const [productId, variantId] = l.key.split("__");
+      return { productId: productId ?? l.id, variantId: variantId || null, qty: l.qty };
     });
+    ads.trackBeginCheckout(
+      items.map((item, i) => ({ id: item.variantId ?? item.productId, quantity: item.qty, price: lines[i]?.product.price })),
+      subtotal,
+    );
+    const session = user
+      ? await checkout.start({ cartId, lines: items, email: values.email.trim(), shippingAddress })
+      : await checkout.startGuest({
+          cartId,
+          lines: items,
+          contact: {
+            email: values.email.trim(),
+            phone: phone.national,
+            firstName: firstname,
+            lastName: rest.join(" "),
+            acceptsMarketing: newsletter,
+          },
+          shippingAddress,
+        });
     if (!session) return;
 
     const result = await checkout.pay();
@@ -281,6 +304,15 @@ const Checkout = () => {
           {user && (
             <Link href="/account/orders" className="mt-5 text-xs text-ink underline underline-offset-4 transition-opacity hover:opacity-60">
               View your orders
+            </Link>
+          )}
+          {/* A guest's order: its status page (the same link as in the order email) */}
+          {!user && checkout.statusToken && (
+            <Link
+              href={orderStatusPath(checkout.statusToken) ?? "/"}
+              className="mt-5 text-xs text-ink underline underline-offset-4 transition-opacity hover:opacity-60"
+            >
+              View your order
             </Link>
           )}
         </div>
@@ -360,7 +392,10 @@ const Checkout = () => {
                 <TextField label="Postal code" autoComplete="postal-code" {...field("postalCode")} />
                 <TextField label="Phone" type="tel" autoComplete="tel" {...field("phone")} />
               </div>
-              <Checkbox label="Save this information for next time" checked={saveInfo} onChange={setSaveInfo} className="mt-4" />
+              {/* Saved to the account's addresses, so only offered when signed in */}
+              {user && (
+                <Checkbox label="Save this information for next time" checked={saveInfo} onChange={setSaveInfo} className="mt-4" />
+              )}
             </section>
 
             {/* Payment */}
@@ -387,7 +422,7 @@ const Checkout = () => {
                   ? "Reserving your pieces…"
                   : checkout.step === "paying" || checkout.step === "verifying"
                     ? "Confirming payment…"
-                    : user
+                    : user || allowsGuest
                       ? "Checkout"
                       : "Sign in to checkout"}
               </button>

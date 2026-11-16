@@ -12,7 +12,7 @@ import Loader from "@/components/layout/Loader";
 import { LoaderProvider } from "@/components/providers/LoaderProvider";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { usePathname } from "next/navigation";
-import { ZcomProvider } from "@zcom/storefront-kit/client";
+import { ZcomProvider, ZcomTags } from "@zcom/storefront-kit/client";
 import { CatalogProvider, type CatalogCategory } from "@/components/providers/CatalogProvider";
 import { zcomConfig } from "@/zcom.config";
 import type { Look, Product } from "@/types";
@@ -65,6 +65,8 @@ export default function SiteLayout({ children, products, categories, looks }: Si
         <LoaderProvider>
         <ToastProvider>
         <ZcomProvider config={zcomConfig}>
+        {/* GA4, GTM, Meta Pixel and Google Ads from the store's settings, each once its consent is given */}
+        <ZcomTags />
         <CatalogProvider products={products} categories={categories} looks={looks}>
         <AuthProvider>
         <CartProvider>
