@@ -6,8 +6,10 @@ export const siteConfig = {
   tagline: "Contemporary clothing where art meets everyday expression",
   description:
     "Shop Birelle — contemporary clothing built around art and everyday expression. Painterly tees, trousers, joggers and shorts from the Collection 2026, with complimentary express shipping over $250.",
-  // Set NEXT_PUBLIC_SITE_URL to the production domain (e.g. https://birelle.com)
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  // Where the site is served (canonical links, sitemap, social cards, payment return), set here as in
+  // SAVA; change it to https://birelle.in once the site moves there. NEXT_PUBLIC_SITE_URL overrides it
+  // (e.g. http://localhost:3000 in .env.local)
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://birelle.vercel.app",
   locale: "en_IN",
   language: "en-IN",
   // Store currency (the Zcom API charges in it): the Birelle store's, set here as in SAVA
