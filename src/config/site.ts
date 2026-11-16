@@ -10,8 +10,8 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   locale: "en_IN",
   language: "en-IN",
-  // Store currency (the Zcom API charges in it); set NEXT_PUBLIC_STORE_CURRENCY per store
-  currency: process.env.NEXT_PUBLIC_STORE_CURRENCY || "USD",
+  // Store currency (the Zcom API charges in it): the Birelle store's, set here as in SAVA
+  currency: "INR",
   ogImage: "/og.png",
   logo: "/logo.svg",
   themeColor: "#ffffff",
