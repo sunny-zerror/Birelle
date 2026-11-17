@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Link } from "next-view-transitions";
 import { formatMoney, getShipmentStatusLabel } from "@zcom/storefront-kit/core";
 import { getOrderStatus } from "@zcom/storefront-kit/server";
 import NoticePage from "@/components/sections/notice/NoticePage";
@@ -40,9 +41,9 @@ export default async function Page({ params }: Params) {
       )}
       {trackingUrl && (
         <p className="mt-2">
-          <a href={trackingUrl} target="_blank" rel="noopener noreferrer" className="text-forest underline underline-offset-4">
+          <Link href={trackingUrl} target="_blank" rel="noopener noreferrer" className="text-forest underline underline-offset-4">
             Track your parcel
-          </a>
+          </Link>
         </p>
       )}
       <ul className="mt-6 flex flex-col gap-2 border-y border-ink/15 py-5 text-left text-ink">
@@ -85,9 +86,9 @@ export default async function Page({ params }: Params) {
       {order.store?.email && (
         <p className="mt-6">
           Questions? Write to{" "}
-          <a href={`mailto:${order.store.email}`} className="text-forest underline underline-offset-4">
+          <Link href={`mailto:${order.store.email}`} target="_top" className="text-forest underline underline-offset-4">
             {order.store.email}
-          </a>
+          </Link>
           .
         </p>
       )}

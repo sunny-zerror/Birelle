@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import { formatPrice } from "@/data/products";
 import { useCatalog } from "@/components/providers/CatalogProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 import type { Product } from "@/types";
 import CuratedWaveCanvas from "./CuratedWaveCanvas";
 
@@ -25,7 +26,7 @@ type CardProps = { product: Product; isWished: boolean; onToggle: () => void };
 const Card = ({ product, isWished, onToggle }: CardProps) => (
   <article className="group relative">
     {/* Image scales up on hover */}
-    <div className="home-curated__media relative aspect-3/4 overflow-hidden">
+    <ImageSkeleton className="home-curated__media relative aspect-3/4 overflow-hidden">
       <Link href={product.href} draggable={false} className="absolute flex items-center justify-center inset-0" aria-label={product.title}>
         <img
           src={product.image}
@@ -45,7 +46,7 @@ const Card = ({ product, isWished, onToggle }: CardProps) => (
       >
         {isWished ? <RiHeartFill className="size-5" /> : <RiHeartLine className="size-5" />}
       </button>
-    </div>
+    </ImageSkeleton>
 
     {/* Name (underlined) over price, centred, rises in on hover. Kept in the layout but hidden on the card under the canvas */}
     <Link

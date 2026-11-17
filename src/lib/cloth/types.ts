@@ -11,6 +11,20 @@ export interface GarmentAsset {
   maskH: number;
 }
 
+/** The shopping bag standing in the middle of the stage, in canvas px. */
+export interface Bag {
+  /** body (front face + side gusset) — solid for every piece outside it */
+  left: number;
+  right: number;
+  /** the mouth: top edge of the front face */
+  top: number;
+  /** walls a piece falls between once it's dropped in */
+  innerLeft: number;
+  innerRight: number;
+  /** front face width — garments are sized to fit through the mouth */
+  width: number;
+}
+
 export interface Bounds {
   left: number;
   right: number;

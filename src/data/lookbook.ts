@@ -5,8 +5,8 @@ const IMG = "/images/lookbook";
 
 const CATEGORIES = ["Tees", "Shirts", "Knitwear", "Outerwear", "Essentials"];
 
-// Giant title the garments land on (one entry per line)
-export const LOOKBOOK_TITLE = ["Birelle", "Lookbook"];
+// Giant title set behind the shopping bag (one entry per line)
+export const LOOKBOOK_TITLE = ["The Art of", "Everyday", "Expression"];
 
 export const LOOKBOOK_SEASON = "Collection 2026";
 

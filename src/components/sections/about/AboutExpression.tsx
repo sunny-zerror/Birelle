@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -54,7 +55,7 @@ const AboutExpression = () => {
           </span>
         </h2>
 
-        <div className="about-expression__media relative mt-stack aspect-551/637 w-full max-w-[34rem] overflow-hidden bg-neutral-200 md:mt-16">
+        <ImageSkeleton className="about-expression__media relative mt-stack aspect-551/637 w-full max-w-[34rem] overflow-hidden bg-neutral-200 md:mt-16">
           {/* Taller than the frame so the drift never shows an edge */}
           <img
             src="/images/aboutpage/webp/store.webp"
@@ -62,7 +63,7 @@ const AboutExpression = () => {
             loading="lazy"
             className="absolute inset-x-0 -top-[10%] h-[120%] w-full object-cover will-change-transform"
           />
-        </div>
+        </ImageSkeleton>
 
         <p className="about-expression__copy mt-stack max-w-[30rem] text-center text-sm   text-ink md:mt-16">
           We believe clothing should leave room for individuality. For colour that surprises, ideas that evolve and the

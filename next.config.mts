@@ -3,8 +3,9 @@ import type { NextConfig } from "next";
 
 // CSP and security headers from the Zcom kit: the platform media CDN, the payment apps, GA4/GTM and the
 // Meta/Google ad tags are built in. 'unsafe-eval' and no HSTS in development. (An .mts file: the kit
-// is ESM only, and Next loads a plain next.config.ts as CommonJS.)
+// is ESM only, and Next loads a plain next.config.ts as CommonJS.) flagcdn serves the phone field's country flags.
 const securityHeaders = buildSecurityHeaders({
+  imageHosts: ["https://flagcdn.com"],
   development: process.env.NODE_ENV !== "production",
   reportOnly: process.env.CSP_REPORT_ONLY === "true",
 });

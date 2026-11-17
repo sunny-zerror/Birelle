@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "next-view-transitions";
-import { RiAddLine, RiArrowDownSLine, RiCloseLine, RiSubtractLine } from "@remixicon/react";
+import { RiAddLine, RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine, RiSubtractLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
 import { useCart } from "@/components/providers/CartProvider";
 import { formatPrice, getSizes } from "@/data/products";
 import { useCatalog } from "@/components/providers/CatalogProvider";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 import { siteConfig } from "@/config/site";
 import type { Product } from "@/types";
 
@@ -14,43 +15,109 @@ const FREE_DELIVERY_FROM = siteConfig.shipping.freeOver;
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
-// Recommendation card with its own size picker — sized so 1.5 cards show (one card + gap-8 + half a card = 100%)
-const Suggestion = ({ product, onAdd }: { product: Product; onAdd: (size: string) => void }) => {
+type SuggestionProps = { product: Product; onAdd: (size: string) => void; onOpen: () => void };
+
+// Recommendation card with its own size picker — two to a view (gap-4 between them)
+const Suggestion = ({ product, onAdd, onOpen }: SuggestionProps) => {
   const sizes = getSizes(product);
   const [size, setSize] = useState(sizes.includes("M") ? "M" : sizes[0]);
 
   return (
-    <li className="flex w-[calc((100%-2rem)/1.5)] shrink-0 snap-start gap-4">
-      <Link href={product.href} className="block aspect-3/4 w-20 shrink-0 overflow-hidden bg-white">
-        <img src={product.image} alt={product.title} className="cover" loading="lazy" />
+    <li className="flex w-[calc((100%-1rem)/2)] shrink-0 snap-start flex-col">
+      <Link href={product.href} onClick={onOpen} className="group block aspect-4/5 overflow-hidden bg-neutral-100">
+        <ImageSkeleton className="size-full">
+        <img
+          src={product.image}
+          alt={product.title}
+          loading="lazy"
+          className={`size-full object-contain p-3 transition-transform duration-700 ${ease} group-hover:scale-105`}
+        />
+        </ImageSkeleton>
       </Link>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <p className="truncate text-sm text-ink">{product.title}</p>
-        <p className="mt-1 text-sm text-ink">{formatPrice(product.price)}</p>
-        <div className="mt-auto flex gap-2 pt-3">
-          <label className="relative flex-1">
-            <span className="sr-only">Size for {product.title}</span>
-            <select
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-              className="h-8 w-full appearance-none border border-ink/30 bg-white pl-2 pr-6 text-sm text-ink focus:border-ink focus:outline-none"
-            >
-              {sizes.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-            <RiArrowDownSLine size={14} className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
-          </label>
-          <button
-            type="button"
-            onClick={() => onAdd(size)}
-            className="h-8 bg-deep px-4 text-sm text-white transition-colors duration-300 hover:bg-ink"
+
+      <Link href={product.href} onClick={onOpen} className="mt-3 truncate text-sm text-ink">
+        <span className="link-line">{product.title}</span>
+      </Link>
+      <p className="mt-1 text-sm tabular-nums text-muted">{formatPrice(product.price)}</p>
+
+      {/* Size + add share one bordered bar */}
+      <div className="mt-3 flex h-9">
+        <label className="relative min-w-0 flex-1">
+          <span className="sr-only">Size for {product.title}</span>
+          <select
+            value={size}
+            onChange={(e) => setSize(e.target.value)}
+            className="h-full w-full cursor-pointer appearance-none border border-r-0 border-ink/30 bg-white pl-3 pr-7 text-sm text-ink transition-colors focus:border-ink focus:outline-none"
           >
-            Add
-          </button>
-        </div>
+            {sizes.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+          <RiArrowDownSLine size={14} aria-hidden="true" className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-ink" />
+        </label>
+        <button
+          type="button"
+          onClick={() => onAdd(size)}
+          aria-label={`Add ${product.title}, size ${size}, to cart`}
+          className="shrink-0 bg-deep px-4 text-sm text-white transition-colors duration-300 hover:bg-ink"
+        >
+          Add
+        </button>
       </div>
     </li>
+  );
+};
+
+// Horizontal row of suggestions: swipe on touch, arrows on desktop (the scrollbar is hidden)
+const Suggestions = ({ products, onAdd, onOpen }: { products: Product[]; onAdd: (id: string, size: string) => void; onOpen: () => void }) => {
+  const trackRef = useRef<HTMLUListElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+
+  const updateEdges = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    setEdges({ start: el.scrollLeft <= 1, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1 });
+  };
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateEdges);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [products.length]);
+
+  // One card (plus its gap) per click
+  const step = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    const card = el?.querySelector("li");
+    if (el && card) el.scrollBy({ left: dir * (card.offsetWidth + 16), behavior: "smooth" });
+  };
+
+  const arrowClass =
+    "center size-8 border border-ink/30 text-ink transition-[opacity,border-color] duration-300 hover:border-ink disabled:pointer-events-none disabled:opacity-30";
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h3 className="secondary-font text-base font-medium text-ink">You may also like</h3>
+        {products.length > 2 && (
+          <div className="flex gap-2">
+            <button type="button" aria-label="Previous suggestions" onClick={() => step(-1)} disabled={edges.start} className={arrowClass}>
+              <RiArrowLeftSLine size={16} />
+            </button>
+            <button type="button" aria-label="Next suggestions" onClick={() => step(1)} disabled={edges.end} className={arrowClass}>
+              <RiArrowRightSLine size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+      <ul ref={trackRef} onScroll={updateEdges} className="scroller_none mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain">
+        {products.map((p) => (
+          <Suggestion key={p.id} product={p} onAdd={(size) => onAdd(p.id, size)} onOpen={onOpen} />
+        ))}
+      </ul>
+    </>
   );
 };
 
@@ -87,7 +154,7 @@ const CartDrawer = () => {
         aria-label="Close cart"
         tabIndex={-1}
         onClick={close}
-        className={`absolute inset-0 cursor-default bg-white/30 backdrop-blur-md transition-opacity duration-700 ${ease} ${
+        className={`absolute inset-0 cursor-default bg-black/40 backdrop-blur-sm transition-opacity duration-700 ${ease} ${
           isOpen ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -97,7 +164,7 @@ const CartDrawer = () => {
         role="dialog"
         aria-modal="true"
         aria-label="Your cart"
-        className={`absolute inset-y-0 right-0 flex w-full flex-col bg-white shadow-[-20px_0_60px_rgba(0,0,0,0.08)] transition-transform duration-700 md:w-[46vw] md:max-w-152 ${ease} ${
+        className={`absolute inset-y-0 right-0 flex w-full flex-col border-l border-line bg-white transition-transform duration-700 md:w-drawer ${ease} ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -153,7 +220,9 @@ const CartDrawer = () => {
                     onClick={close}
                     className="block aspect-3/4 w-24 shrink-0 overflow-hidden bg-neutral-100"
                   >
-                    <img src={line.product.image} alt={line.product.title} className="cover" />
+                    <ImageSkeleton className="size-full">
+                      <img src={line.product.image} alt={line.product.title} className="cover" />
+                    </ImageSkeleton>
                   </Link>
 
                   <div className="flex min-w-0 flex-1 flex-col">
@@ -202,13 +271,8 @@ const CartDrawer = () => {
 
           {/* Suggestions — pinned to the bottom of an empty cart, otherwise they follow the items */}
           {suggestions.length > 0 && (
-            <div className={lines.length === 0 ? "mt-auto pt-6" : "mt-6"}>
-              <h3 className="secondary-font text-base font-medium text-ink">You may also like</h3>
-              <ul className="scroller_none  mt-6 flex snap-x gap-8 overflow-x-auto px-6  md:px-8">
-                {suggestions.map((p) => (
-                  <Suggestion key={p.id} product={p} onAdd={(size) => add(p.id, size)} />
-                ))}
-              </ul>
+            <div className={`border-t border-line pt-6 ${lines.length === 0 ? "mt-auto" : "mt-2"}`}>
+              <Suggestions products={suggestions} onAdd={(id, size) => add(id, size)} onOpen={close} />
             </div>
           )}
         </div>

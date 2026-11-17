@@ -70,7 +70,7 @@ const Header = () => {
               <span className="block h-px w-full bg-current" />
               <span className="block h-px w-2/3 bg-current transition-[width] duration-500 group-hover:w-full" />
             </span>
-            <span className="hidden text-sm md:inline">Menu</span>
+            <span className="link-line hidden text-sm md:inline">Menu</span>
           </button>
           <button
             type="button"
@@ -80,7 +80,7 @@ const Header = () => {
             className="flex h-8 items-center gap-2.5 transition-opacity hover:opacity-60"
           >
             <RiSearchLine size={16} />
-            <span className="hidden text-sm md:inline">Search</span>
+            <span className="link-line hidden text-sm md:inline">Search</span>
           </button>
         </div>
 

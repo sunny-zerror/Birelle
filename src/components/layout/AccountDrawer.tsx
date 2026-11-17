@@ -297,7 +297,7 @@ const AccountDrawer = () => {
         aria-label="Close account"
         tabIndex={-1}
         onClick={onClose}
-        className={`absolute inset-0 cursor-default bg-white/30 backdrop-blur-md transition-opacity duration-700 ${ease} ${
+        className={`absolute inset-0 cursor-default bg-black/40 backdrop-blur-sm transition-opacity duration-700 ${ease} ${
           isOpen ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -307,7 +307,7 @@ const AccountDrawer = () => {
         role="dialog"
         aria-modal="true"
         aria-labelledby="account-drawer-title"
-        className={`absolute inset-y-0 right-0 flex w-full flex-col bg-white shadow-[-20px_0_60px_rgba(0,0,0,0.08)] transition-transform duration-700 md:w-[46vw] md:max-w-152 ${ease} ${
+        className={`absolute inset-y-0 right-0 flex w-full flex-col border-l border-line bg-white transition-transform duration-700 md:w-drawer ${ease} ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

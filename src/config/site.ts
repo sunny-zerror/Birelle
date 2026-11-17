@@ -84,6 +84,14 @@ export const siteRoutes: SiteRoute[] = [
     priority: 0.8,
   },
   {
+    path: "/lookbook/all",
+    label: "All Looks",
+    title: "All Looks — Collection 2026 Lookbook",
+    description:
+      "Every look from the Birelle Collection 2026 in one place — browse the full lookbook, styled and photographed, and open any look to shop it.",
+    priority: 0.7,
+  },
+  {
     path: "/contact",
     label: "Contact",
     title: "Contact Us — Client Services",

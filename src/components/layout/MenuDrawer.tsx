@@ -5,6 +5,7 @@ import { Link } from "next-view-transitions";
 import { RiArrowLeftLine, RiArrowRightLine, RiCloseLine } from "@remixicon/react";
 import { useCatalog } from "@/components/providers/CatalogProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 import type { Product } from "@/types";
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -43,6 +44,11 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const active = menu.find((m) => m.key === activeKey && m.items);
+  // Read by the Escape handler — closing from inside a setActiveKey updater would update Header mid-render
+  const activeKeyRef = useRef(activeKey);
+  useEffect(() => {
+    activeKeyRef.current = activeKey;
+  }, [activeKey]);
 
   // Lock page scroll, focus close, Escape steps back a level then closes
   useEffect(() => {
@@ -52,10 +58,8 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
     closeRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      setActiveKey((key) => {
-        if (key === null) onClose();
-        return null;
-      });
+      if (activeKeyRef.current === null) onClose();
+      else setActiveKey(null);
     };
     window.addEventListener("keydown", onKey);
 
@@ -80,7 +84,7 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
         aria-label="Close menu"
         tabIndex={-1}
         onClick={onClose}
-        className={`absolute inset-0 cursor-default bg-white/30 backdrop-blur-md transition-opacity duration-700 ${ease} ${
+        className={`absolute inset-0 cursor-default bg-black/40 backdrop-blur-sm transition-opacity duration-700 ${ease} ${
           isOpen ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -96,7 +100,7 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
         {/* Level 1 */}
         <nav
           aria-label="Main"
-          className="pointer-events-auto relative z-10 flex h-full w-full flex-col bg-white text-ink md:w-[30vw] md:min-w-96 md:max-w-120"
+          className="pointer-events-auto relative z-10 flex h-full w-full flex-col border-r border-line bg-white text-ink md:w-drawer"
         >
           <div className="flex h-header shrink-0 items-center px-6 md:px-12">
             <button
@@ -115,7 +119,7 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
             <ul className="group/list mt-6 flex flex-col gap-1 md:mt-10">
               {menu.map((item, i) => {
                 const selected = item.key === activeKey;
-                const className = `secondary-font flex w-full items-center justify-between py-2 text-left text-2xl transition-[opacity,translate] duration-500 md:text-[1.75rem] ${ease} ${
+                const className = `secondary-font flex w-full items-center justify-between py-2 text-left text-2xl transition-[opacity,translate] duration-300 md:text-[1.75rem]  ${
                   activeKey && !selected ? "opacity-35" : ""
                 } group-hover/list:opacity-35 hover:opacity-100! ${
                   isOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"
@@ -132,19 +136,15 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
                         className={className}
                         style={style}
                       >
-                        <span className="relative">
+                        {/* Underline draws in on hover and stays while this panel is open */}
+                        <span className="link-line" data-active={selected || undefined}>
                           {item.label}
-                          <span
-                            className={`absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-500 ${ease} ${
-                              selected ? "scale-x-100" : "scale-x-0"
-                            }`}
-                          />
                         </span>
                         <RiArrowRightLine size={18} className="md:hidden" />
                       </button>
                     ) : (
                       <Link href={item.href} onClick={onClose} className={className} style={style}>
-                        {item.label}
+                        <span className="link-line">{item.label}</span>
                       </Link>
                     )}
                   </li>
@@ -163,7 +163,7 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
                     }}
                     className="transition-opacity hover:opacity-60"
                   >
-                    {s.label}
+                    <span className="link-line">{s.label}</span>
                   </Link>
                 </li>
               ))}
@@ -177,7 +177,7 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
         <div
           aria-hidden={!active}
           inert={!active}
-          className={`pointer-events-auto absolute inset-y-0 left-0 z-20 flex w-full flex-col bg-white text-ink transition-[translate,visibility] duration-700 md:relative md:z-0 md:w-[26vw] md:min-w-80 md:max-w-104 md:border-l md:border-line ${ease} ${
+          className={`pointer-events-auto absolute inset-y-0 left-0 z-20 flex w-full flex-col bg-white text-ink transition-[translate,visibility] duration-700 md:relative md:z-0 md:w-drawer md:border-r md:border-line ${ease} ${
             active ? "visible" : "invisible"
           } ${
             // Rides along with the drawer while it is closed, so resetting never sweeps it across the screen
@@ -212,7 +212,7 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
                 {active.items.map((p) => (
                   <li key={p.id}>
                     <Link href={p.href} onClick={onClose} className="transition-opacity hover:opacity-60">
-                      {p.title}
+                      <span className="link-line">{p.title}</span>
                     </Link>
                   </li>
                 ))}
@@ -220,14 +220,14 @@ const MenuDrawer = ({ isOpen, onClose }: Props) => {
 
               {active.items[0] && (
                 <Link href={active.items[0].href} onClick={onClose} className="group mt-auto block pt-10">
-                  <div className="aspect-4/5 overflow-hidden bg-neutral-100">
+                  <ImageSkeleton className="aspect-4/5 overflow-hidden bg-neutral-100">
                     <img
                       src={active.items[0].image}
                       alt={active.items[0].title}
                       loading="lazy"
                       className={`cover transition-transform duration-1000 ${ease} group-hover:scale-105`}
                     />
-                  </div>
+                  </ImageSkeleton>
                   <p className="mt-3 text-sm">{active.items[0].title}</p>
                 </Link>
               )}

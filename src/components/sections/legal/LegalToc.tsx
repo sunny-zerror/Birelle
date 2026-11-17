@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "next-view-transitions";
 import { RiArrowDownSLine } from "@remixicon/react";
+import { scrollToSection } from "@/lib/scroll";
 
 type TocItem = { id: string; title: string };
 
@@ -32,9 +34,13 @@ const LegalToc = ({ items }: { items: TocItem[] }) => {
     <ol className="flex flex-col">
       {items.map(({ id, title }, i) => (
         <li key={id}>
-          <a
+          <Link
             href={`#${id}`}
-            onClick={() => setOpen(false)}
+            scroll={false}
+            onClick={(e) => {
+              setOpen(false);
+              scrollToSection(e, id);
+            }}
             aria-current={active === id ? "location" : undefined}
             className={`flex gap-3 border-l py-2 pl-4 text-sm transition-colors duration-300 lg:-ml-px ${
               active === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
@@ -42,7 +48,7 @@ const LegalToc = ({ items }: { items: TocItem[] }) => {
           >
             <span className="w-5 shrink-0 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
             {title}
-          </a>
+          </Link>
         </li>
       ))}
     </ol>

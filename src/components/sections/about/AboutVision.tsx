@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -63,12 +64,14 @@ const AboutVision = () => {
         <ul className="about-vision__grid mx-auto grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-2.5">
           {moodboard.map((image) => (
             <li key={image.src} className="about-vision__tile group aspect-square overflow-hidden bg-neutral-100">
+              <ImageSkeleton className="size-full">
               <img
                 src={image.src}
                 alt={image.alt}
                 loading="lazy"
                 className="cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
               />
+              </ImageSkeleton>
             </li>
           ))}
         </ul>

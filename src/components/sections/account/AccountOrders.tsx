@@ -8,6 +8,7 @@ import { formatPrice } from "@/data/products";
 import { formatDate } from "@/utils/date";
 import type { Order } from "@/types";
 import { AccountHeading, EmptyState, StatusBadge, ease } from "./ui";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 const itemCount = (o: Order) => o.lines.reduce((n, l) => n + l.qty, 0);
 
@@ -38,7 +39,7 @@ const OrderCard = ({ order, index }: { order: Order; index: number }) => {
                 key={`${l.productId}-${l.size}-${l.colour}`}
                 className="aspect-3/4 w-10 overflow-hidden border-2 border-white bg-neutral-100"
               >
-                <img src={l.image} alt="" loading="lazy" className="cover" />
+                <ImageSkeleton className="size-full"><img src={l.image} alt="" loading="lazy" className="cover" /></ImageSkeleton>
               </li>
             ))}
           </ul>
@@ -67,7 +68,7 @@ const OrderCard = ({ order, index }: { order: Order; index: number }) => {
               {order.lines.map((l) => (
                 <li key={`${l.productId}-${l.size}-${l.colour}`} className="flex gap-4 py-4 first:pt-0">
                   <Link href={l.href} className="block aspect-3/4 w-16 shrink-0 overflow-hidden bg-neutral-100 md:w-20">
-                    <img src={l.image} alt={l.title} loading="lazy" className="cover" />
+                    <ImageSkeleton className="size-full"><img src={l.image} alt={l.title} loading="lazy" className="cover" /></ImageSkeleton>
                   </Link>
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm">
                     <div className="flex items-start justify-between gap-4">

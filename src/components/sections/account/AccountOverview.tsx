@@ -9,6 +9,7 @@ import { formatPrice } from "@/data/products";
 import { formatPhone } from "@/lib/countries";
 import { formatDate, formatMonth } from "@/utils/date";
 import { AccountHeading, ArrowLink, Panel, StatusBadge } from "./ui";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 const AccountOverview = () => {
   const { user } = useAuth();
@@ -41,7 +42,7 @@ const AccountOverview = () => {
               <ul className="mt-5 flex gap-2">
                 {latest.lines.slice(0, 4).map((l) => (
                   <li key={`${l.productId}-${l.size}-${l.colour}`} className="aspect-3/4 w-14 overflow-hidden bg-neutral-100">
-                    <img src={l.image} alt={l.title} loading="lazy" className="cover" />
+                    <ImageSkeleton className="size-full"><img src={l.image} alt={l.title} loading="lazy" className="cover" /></ImageSkeleton>
                   </li>
                 ))}
               </ul>
@@ -67,7 +68,7 @@ const AccountOverview = () => {
                 {wishlist.slice(0, 4).map((p) => (
                   <li key={p.id}>
                     <Link href={p.href} className="center block aspect-3/4 w-14 overflow-hidden bg-neutral-100">
-                      <img src={p.image} alt={p.title} loading="lazy" className="w-[85%]" />
+                      <ImageSkeleton className="center size-full"><img src={p.image} alt={p.title} loading="lazy" className="w-[85%]" /></ImageSkeleton>
                     </Link>
                   </li>
                 ))}

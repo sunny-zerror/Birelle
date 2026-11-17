@@ -5,6 +5,7 @@ import {
   HomeMaking,
   HomeCollection,
   HomeSeenOnYou,
+  HomeNewIn,
 } from "@/components/sections/home";
 import { siteConfig } from "@/config/site";
 import { createPageMetadata } from "@/lib/seo";
@@ -17,11 +18,10 @@ const HomePage = () => {
         {siteConfig.name} — {siteConfig.tagline}
       </h1>
       <HomeHero />
-      <HomeLookbook />
-      <HomeCurated />
-      <HomeMaking />
       <HomeCollection />
-      <HomeSeenOnYou />
+      <HomeCurated />
+      <HomeNewIn />
+      <HomeLookbook />
     </>
   );
 };

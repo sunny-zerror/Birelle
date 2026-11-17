@@ -13,7 +13,7 @@
  * Constraints: structural (neighbours), shear (diagonals) and very soft bend
  * links (two apart) so garments flop and crumple.
  */
-import type { Bounds, Grab, GarmentAsset, Grip } from "./types";
+import type { Bag, Bounds, Grab, GarmentAsset, Grip } from "./types";
 
 export const OBLIQUE = 0.55;
 const GRAVITY = 0.28; // px per frame² (fixed 60 Hz step)
@@ -25,6 +25,9 @@ const K_SHEAR = 0.6;
 const K_BEND = 0.14;
 const STATIC_FRICTION = 0.35; // px — slower slides than this stop dead on the floor
 const KINETIC_FRICTION = 0.55;
+const BAG_PUSH = 4; // px per solver pass — a piece overlapping the bag slides off it instead of jumping
+const BAG_SHOVE = 0.6; // px per frame — brushing the bag's side tips a piece away, so none ends up leaning on it
+const RIM_SLIDE = 4; // px per frame — a piece let go above the bag (not dropped in) slides off its top to the floor
 
 interface FabricOptions {
   /** garment / look index */
@@ -34,6 +37,8 @@ interface FabricOptions {
   asset: GarmentAsset;
   viewW: number;
   viewH: number;
+  /** horizontal centre to spawn at (random across the view if left out) */
+  centerX?: number;
   /** spawn already on screen (reduced motion) */
   initial?: boolean;
 }
@@ -52,6 +57,10 @@ export default class Fabric {
   landedFrames = 0;
   entered = false;
   floor = Infinity;
+  /** dropped into the bag: falls between its walls instead of bouncing off its body */
+  bagged = false;
+  /** which side of the bag this piece slides off when it lands on top: -1 left, 1 right */
+  private rimSide = 1;
   /** bumps whenever the shape changes (for GPU upload) */
   version = 0;
 
@@ -72,7 +81,7 @@ export default class Fabric {
   readonly rest: Float32Array;
   readonly triangles: Uint32Array;
 
-  constructor({ index, width, asset, viewW, viewH, initial = false }: FabricOptions) {
+  constructor({ index, width, asset, viewW, viewH, centerX, initial = false }: FabricOptions) {
     this.index = index;
     this.w = width;
     this.h = width * asset.aspect;
@@ -95,7 +104,7 @@ export default class Fabric {
     this.solid = new Uint8Array(n);
     this.contact = new Uint8Array(n);
 
-    const center = width * 0.65 + Math.random() * (viewW - width * 1.3);
+    const center = centerX ?? width * 0.65 + Math.random() * (viewW - width * 1.3);
     const top = initial ? viewH * 0.68 : -this.h - 25;
     const angle = (Math.random() - 0.5) * 0.7;
     const cos = Math.cos(angle);
@@ -261,7 +270,7 @@ export default class Fabric {
     }
   }
 
-  solve(surface: number, viewW: number, grab: Grab | null, pass = 0) {
+  solve(surface: number, viewW: number, grab: Grab | null, pass = 0, bag: Bag | null = null) {
     if (this.sleeping) return;
     const { x, y, z, px, py, pz, la, lb, lk, rest } = this;
     const held = grab?.fabric === this ? grab : null;
@@ -312,6 +321,14 @@ export default class Fabric {
     this.floor = surface - 1.5;
     const floor = this.floor;
     const zMax = this.w * 0.8;
+    // the piece in hand is held in front of the bag, everything else bumps into it
+    const box = held ? null : bag;
+    // The whole piece leaves the rim one way (towards the nearer side), so it never splits over the middle
+    if (box && !this.bagged) {
+      let sum = 0;
+      for (let i = 0; i < this.n; i++) sum += x[i];
+      this.rimSide = sum / this.n < (box.left + box.right) / 2 ? -1 : 1;
+    }
     if (!this.entered) {
       let inside = true;
       for (let i = 0; i < this.n; i++) {
@@ -336,6 +353,14 @@ export default class Fabric {
         y[i] = 2 - z[i] * OBLIQUE;
         py[i] = y[i];
       }
+      // nothing is drawn in front of the floor line: a fold leaning toward the viewer is pushed back
+      // in depth, so it piles up behind the line instead of being flattened onto it (which read as
+      // the piece being cut off along the floor)
+      const front = (floor - Math.min(y[i], floor)) / OBLIQUE;
+      if (z[i] > front) {
+        z[i] = front;
+        pz[i] = z[i];
+      }
       if (y[i] > floor) {
         y[i] = floor;
         py[i] = floor;
@@ -351,8 +376,45 @@ export default class Fabric {
         }
         this.contact[i] = 1;
       }
+      if (box) this.collideBag(i, box);
     }
     if (held) this.pinGrip(held);
+  }
+
+  /** Below the mouth the bag body is solid from outside, and its walls hold a piece that was dropped in. */
+  private collideBag(i: number, bag: Bag) {
+    const { x, y, z, px, py } = this;
+    const vy = Math.min(this.floor, y[i] + z[i] * OBLIQUE);
+    if (vy <= bag.top) return;
+    if (this.bagged) {
+      if (x[i] < bag.innerLeft) {
+        x[i] = bag.innerLeft;
+        px[i] = x[i];
+      } else if (x[i] > bag.innerRight) {
+        x[i] = bag.innerRight;
+        px[i] = x[i];
+      }
+      return;
+    }
+    if (x[i] <= bag.left || x[i] >= bag.right) return;
+    // out the shortest way: up onto the rim (then slid off it, so nothing rests in the mouth), or off a side
+    const l = x[i] - bag.left;
+    const r = bag.right - x[i];
+    const t = vy - bag.top;
+    if (t < l && t < r) {
+      y[i] -= Math.min(t, BAG_PUSH);
+      py[i] = y[i];
+      px[i] = x[i] - this.rimSide * RIM_SLIDE;
+      this.contact[i] = 1;
+    } else if (this.rimSide < 0) {
+      // off a side — the same side for the whole piece; per-point "nearest side" would pull a piece that
+      // straddles the middle both ways at once, and its links would hold it hanging in the mouth
+      x[i] -= Math.min(l, BAG_PUSH);
+      px[i] = x[i] + BAG_SHOVE;
+    } else {
+      x[i] += Math.min(r, BAG_PUSH);
+      px[i] = x[i] - BAG_SHOVE;
+    }
   }
 
   settle(grab: Grab | null) {
@@ -388,6 +450,16 @@ export default class Fabric {
       this.py[i] = this.y[i] - vy * f;
       this.pz[i] = this.z[i] - vz * f;
     }
+  }
+
+  /** Lets go straight down with a small push (into the bag) — no sideways drift from the carry. */
+  drop(push: number) {
+    for (let i = 0; i < this.n; i++) {
+      this.px[i] = this.x[i];
+      this.py[i] = this.y[i] - push;
+      this.pz[i] = this.z[i];
+    }
+    this.wake();
   }
 
   /** Rescales the garment around its centre after a viewport resize. */

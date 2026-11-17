@@ -17,9 +17,13 @@
   --spacing-card: 0.75rem;
   --spacing-gutter: 1rem;
   --spacing-header: 5rem;
+  /* The fixed header's own height: py-4 + h-8 row + 1px border */
+  --spacing-header-bar: calc(4rem + 1px);
   --spacing-topbar: 2rem;
 
   --container-site: 120rem;
+  /* Every side drawer (menu, cart, account) on tablet and up — full width on phones */
+  --container-drawer: 30rem;
 }
 
 @media (width >= 48rem) {
@@ -182,6 +186,73 @@ button {
 }
 
 
+/* ---------- Page transitions --------------------------------------------- */
+/* next-view-transitions wraps every route change in a view transition: the old page fades out, then the new
+   one fades in with a slight lift. Without these rules the browser's 0.25s default cross-fade runs. */
+::view-transition-old(root) {
+  animation: page-fade-out 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: page-fade-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+@keyframes page-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ---------- Link underline ----------------------------------------------- */
+/* A 1px bar that draws in from the left on hover and leaves off the right. Put .link-line on the text;
+   it reacts to hovering the text itself or the link/button around it. data-active holds it drawn. */
+.link-line {
+  position: relative;
+}
+
+.link-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.125rem;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.link-line:hover::after,
+:is(a, button):hover .link-line::after,
+:is(a, button):focus-visible .link-line::after,
+.link-line:focus-visible::after,
+.link-line[data-active]::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-line::after {
+    transition: none;
+  }
+}
+
 /* ---------- Skeleton loading --------------------------------------------- */
 /* Warm paper block with a slow light sweep — same off-white family as the gallery (#F7F7F7) */
 .skeleton {
@@ -214,8 +285,33 @@ button {
   z-index: -1;
 }
 
-.img-skeleton img {
+/* The picture waits out of sight over the sweep, then fades in once loaded. An animation (not a transition),
+   so it never overrides an image's own hover transition. */
+.img-skeleton:not([data-loaded]) img {
+  opacity: 0;
+}
+
+.img-skeleton[data-loaded] img {
+  animation: img-skeleton-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes img-skeleton-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.img-skeleton video {
   transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Dark variant for media with white text over it (the home hero film) — a faint sweep on ink */
+.img-skeleton--dark:not([data-loaded]) {
+  background-color: var(--color-ink);
+}
+
+.img-skeleton--dark:not([data-loaded])::before {
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.08) 50%, transparent 80%);
 }
 
 @keyframes skeleton-sweep {
@@ -229,5 +325,9 @@ button {
   .img-skeleton:not([data-loaded])::before {
     animation: none;
     opacity: 0;
+  }
+
+  .img-skeleton[data-loaded] img {
+    animation: none;
   }
 }

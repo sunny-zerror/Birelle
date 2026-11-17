@@ -1,2 +1,2 @@
-export { Skeleton, SkeletonText, ProductCardSkeleton, LoadingLabel } from "./Skeleton";
+export { Skeleton, SkeletonText, ProductCardSkeleton, PageIntroSkeleton, LoadingLabel } from "./Skeleton";
 export { default as ImageSkeleton } from "./ImageSkeleton";

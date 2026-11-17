@@ -1,17 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { RiArrowDownSLine } from "@remixicon/react";
+import { RiArrowDownSLine, RiPauseFill, RiPlayFill } from "@remixicon/react";
 import { useLoader } from "@/components/providers/LoaderProvider";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
-
-// Card is the centre 60% of the screen; the inset shrinks to 0 so it opens evenly from every edge
-const INSET_START = 20; // %
-const inset = (v: number) => `inset(${v}% ${v}% ${v}% ${v}%)`;
 
 // Layout position of an element, ignoring any transforms on it (offset* skip transforms)
 const layoutRect = (el: HTMLElement) => {
@@ -26,59 +22,78 @@ const layoutRect = (el: HTMLElement) => {
 
 const HomeHero = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mediaRef = useRef<HTMLDivElement>(null);
   const wordmarkRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const { isLoaded } = useLoader();
 
-  // Intro — held hidden under the loader. Card (outer) does the 3D lid swing, media (inner) does the clip,
-  // so the transform and the clip never fight over one element.
+  // The film may already be playable before hydration, when React wasn't yet listening for canplay
+  const attachVideo = (video: HTMLVideoElement | null) => {
+    videoRef.current = video;
+    if (video && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) setIsVideoReady(true);
+  };
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) video.play();
+    else video.pause();
+  };
+
+  const toggleSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setMuted(video.muted);
+  };
+
+  // Intro — the video is full screen from the start; only the text over it comes in, held hidden under the loader
   useGSAP(
     () => {
-      const card = cardRef.current;
-      const media = mediaRef.current;
-      const video = media?.querySelector("video");
-      if (!card || !media) return;
-      const clip = { value: INSET_START };
-
       const wordmark = wordmarkRef.current;
+      const film = gsap.utils.toArray<HTMLElement>(".home-hero__film-item");
+      const cue = ".home-hero__scroll";
 
       if (!isLoaded) {
-        gsap.set(card, { autoAlpha: 0 });
-        gsap.set(wordmark, { autoAlpha: 0 });
+        gsap.set([wordmark, ...film, cue], { autoAlpha: 0 });
         return;
       }
 
+      // fromTo, not to: on a client-side route change (loader already done) or after the !isLoaded set is
+      // reverted, everything is already at full opacity, so a plain .to(1) would have nothing to animate
       gsap
-        .timeline()
-        .set(card, { autoAlpha: 1, transformOrigin: "50% 80%" })
+        .timeline({ defaults: { ease: "expo.out" } })
         .fromTo(
-          card,
-          { rotateX: -88, rotateZ: -4, scale: 0.6, z: -400 },
-          { rotateX: 0, rotateZ: 0, scale: 1, z: 0, duration: 1.8, ease: "expo.out" },
+          wordmark,
+          { autoAlpha: 0, y: 40, filter: "blur(8px)" },
+          { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 1.6, clearProps: "transform,filter" },
+          0.5,
         )
-        .set(media, { clipPath: inset(INSET_START) }, 0)
-        .fromTo(video ?? [], { scale: 1.4, yPercent: 6 }, { scale: 1.15, yPercent: 0, duration: 1.8, ease: "expo.out" }, 0)
-        .set(card, { clearProps: "transform" })
-        .to(
-          clip,
-          {
-            value: 0,
-            duration: 1.6,
-            ease: "power3.inOut",
-            onUpdate: () => {
-              media.style.clipPath = inset(clip.value);
-            },
-          },
-          "-=0.2",
-        )
-        .to(video ?? [], { scale: 1, duration: 1.6, ease: "power3.inOut" }, "<")
-        // Wordmark fades in once the clip has opened past it
-        // fromTo, not to: on a client-side route change (loader already done) or after the !isLoaded set is
-        // reverted, the wordmark is already at full opacity, so a plain .to(1) would have nothing to animate
-        .fromTo(wordmark, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8, ease: "power2.out" }, "-=0.5");
+        .fromTo(film, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 1.2, stagger: 0.12 }, 0.5)
+        // Opacity only: the cue's own nudge animation owns its transform
+        .fromTo(cue, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1, ease: "power2.out" }, 0.9);
     },
     { scope: sectionRef, dependencies: [isLoaded] },
+  );
+
+  // Sound switches itself off once the hero scrolls out of view; it stays off until turned back on
+  useGSAP(
+    () => {
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top top",
+        end: "bottom top",
+        onLeave: () => {
+          const video = videoRef.current;
+          if (!video || video.muted) return;
+          video.muted = true;
+          setMuted(true);
+        },
+      });
+    },
+    { scope: sectionRef },
   );
 
   // Wordmark docks into the header logo slot as soon as scrolling starts, and undocks back at the top.
@@ -121,28 +136,41 @@ const HomeHero = () => {
 
   return (
     <section ref={sectionRef} id="home-hero" data-hero className="home-hero relative h-screen bg-white">
-      {/* Perspective on the stage so the vanishing point sits at screen centre */}
-      <div className="home-hero__stage relative h-full overflow-hidden perspective-[1400px]">
-        <div ref={cardRef} className="home-hero__card absolute inset-0 transform-3d">
-        {/* Video layer — full screen, revealed by the clip-path */}
-        <div
-          ref={mediaRef}
-          className="home-hero__media absolute inset-0 overflow-hidden bg-ink"
-          style={{ clipPath: inset(INSET_START) }}
-        >
-          <video
-            loop autoPlay muted playsInline
-            className="cover object-[30%_20%]"
-            src="/videos/home_hero_video.mp4"
-          />
-          {/* Scroll cue */}
-          <div
-            aria-hidden="true"
-            className="home-hero__scroll center absolute inset-x-0 bottom-6 mx-auto size-8 animate-nudge text-white"
-          >
-            <RiArrowDownSLine size={20} />
+      {/* Video layer — full screen from the start; a dark skeleton sweeps until the film can play, then it fades in */}
+      <div
+        className="home-hero__media img-skeleton img-skeleton--dark absolute inset-0 overflow-hidden bg-ink"
+        data-loaded={isVideoReady || undefined}
+      >
+        <video
+          ref={attachVideo}
+          loop autoPlay muted playsInline
+          className={`cover ${isVideoReady ? "opacity-100" : "opacity-0"}`}
+          src="/videos/home_hero_video.mp4"
+          onCanPlay={() => setIsVideoReady(true)}
+          onPlay={() => setPaused(false)}
+          onPause={() => setPaused(true)}
+        />
+        {/* Film caption + playback controls */}
+        <div className="home-hero__film secondary-font absolute inset-x-0 bottom-16 z-1 md:bottom-6">
+          <div className="container flex items-center justify-between gap-6 text-xs uppercase text-white">
+            <p className="home-hero__film-item font-medium tracking-[0.2em]">Autumn Winter 2026 — The Film</p>
+            <div className="home-hero__film-item flex items-center gap-6 tracking-wide">
+              <button type="button" onClick={togglePlay} className="flex items-center gap-1.5 uppercase">
+                {paused ? <RiPlayFill size={14} /> : <RiPauseFill size={14} />}
+                {paused ? "Play" : "Pause"}
+              </button>
+              <button type="button" onClick={toggleSound} aria-pressed={!muted} className="uppercase">
+                {muted ? "Sound Off" : "Sound On"}
+              </button>
+            </div>
           </div>
         </div>
+        {/* Scroll cue */}
+        <div
+          aria-hidden="true"
+          className="home-hero__scroll center absolute inset-x-0 bottom-6 mx-auto size-8 animate-nudge text-white"
+        >
+          <RiArrowDownSLine size={20} />
         </div>
       </div>
 

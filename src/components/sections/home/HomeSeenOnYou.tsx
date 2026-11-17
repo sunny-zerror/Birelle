@@ -1,5 +1,6 @@
 import { Link } from "next-view-transitions";
 import { RiAddLine } from "@remixicon/react";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 type Hotspot = {
   x: number; // % from left
@@ -58,9 +59,9 @@ const HomeSeenOnYou = () => {
         <div className="mt-stack grid grid-cols-2 gap-3  md:grid-cols-4 md:gap-5">
           {looks.map((look) => (
             <figure key={look.image} className="home-seen-on-you__look relative aspect-3/4">
-              <div className="absolute inset-0 overflow-hidden bg-neutral-100">
+              <ImageSkeleton className="absolute inset-0 overflow-hidden bg-neutral-100">
                 <img src={look.image} alt={look.alt} className="cover" loading="lazy" />
-              </div>
+              </ImageSkeleton>
 
               {/* Shoppable hotspots — tooltip opens on hover or keyboard focus */}
               {look.hotspots.map((spot) => (

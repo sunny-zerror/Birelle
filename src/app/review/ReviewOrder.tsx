@@ -6,6 +6,7 @@ import { getErrorMessage, takeQueryParams } from "@zcom/storefront-kit/core";
 import { TextArea } from "@/components/ui/form";
 import NoticePage from "@/components/sections/notice/NoticePage";
 import { useHydrated } from "@/hooks/useHydrated";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 type Draft = { rating: number; comment: string };
 
@@ -94,7 +95,11 @@ const ReviewOrder = () => {
       >
         {order.items.map((item) => (
           <div key={item.productId} className="flex gap-4">
-            {item.imageUrl && <img src={item.imageUrl} alt="" className="aspect-3/4 w-16 shrink-0 object-contain" />}
+            {item.imageUrl && (
+              <ImageSkeleton className="aspect-3/4 w-16 shrink-0">
+                <img src={item.imageUrl} alt="" className="size-full object-contain" />
+              </ImageSkeleton>
+            )}
             <div className="flex flex-1 flex-col gap-3">
               <p className="primary-font text-[0.9375rem] text-ink">{item.name}</p>
               <Stars label={`Rating for ${item.name}`} value={drafts[item.productId]?.rating ?? 0} onChange={(n) => set(item.productId, { rating: n })} />

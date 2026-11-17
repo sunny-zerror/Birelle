@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -59,14 +60,14 @@ const AboutHero = () => {
           <p className="about-hero__reveal mt-4 text-sm uppercase tracking-wide text-ink">No More Walls</p>
         </header>
 
-        <div className="about-hero__media relative mx-auto mt-10 aspect-video overflow-hidden bg-neutral-200 md:mt-14">
+        <ImageSkeleton className="about-hero__media relative mx-auto mt-10 aspect-video overflow-hidden bg-neutral-200 md:mt-14">
           <img
             src="/images/aboutpage/webp/hero.webp"
             alt="Hands guiding a hand-painted cream garment through a sewing machine"
             className="cover will-change-transform"
             fetchPriority="high"
           />
-        </div>
+        </ImageSkeleton>
 
         <p className="about-hero__intro mx-auto mt-stack max-w-[32rem] text-center text-sm  text-ink md:mt-20">
           <strong className="font-semibold">BIRELLE</strong> is a contemporary clothing brand built around the

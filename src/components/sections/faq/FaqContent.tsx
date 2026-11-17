@@ -1,9 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
+import { Link } from "next-view-transitions";
 import { RiAddLine, RiSearchLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
 import { faqGroups, type FaqItem } from "@/data/faq";
+import { scrollToSection } from "@/lib/scroll";
 
 const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
@@ -72,12 +74,14 @@ const FaqContent = () => {
           <ul className="scroller_none -mx-gutter flex gap-2 overflow-x-auto px-gutter lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-0">
             {faqGroups.map((g) => (
               <li key={g.id} className="shrink-0">
-                <a
+                <Link
                   href={`#${g.id}`}
+                  scroll={false}
+                  onClick={(e) => scrollToSection(e, g.id)}
                   className="flex h-9 items-center whitespace-nowrap border border-ink/30 px-4 text-xs text-ink transition-colors duration-300 hover:border-ink lg:h-auto lg:border-0 lg:px-0 lg:py-2 lg:text-sm lg:text-muted lg:hover:text-ink"
                 >
                   {g.title}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

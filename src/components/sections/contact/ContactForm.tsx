@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "next-view-transitions";
 import { RiCheckLine } from "@remixicon/react";
 import { isValidPhoneNumber, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { PhoneField, TextArea, TextField } from "@/components/ui/form";
@@ -217,9 +218,9 @@ const ContactForm = () => {
 
       <p className="mt-6 text-xs leading-relaxed text-muted">
         We use your details only to answer your enquiry. See our{" "}
-        <a href="/privacy-policy" className="text-ink underline underline-offset-2 hover:opacity-60">
+        <Link href="/privacy-policy" className="text-ink underline underline-offset-2 hover:opacity-60">
           Privacy Policy
-        </a>
+        </Link>
         .
       </p>
 

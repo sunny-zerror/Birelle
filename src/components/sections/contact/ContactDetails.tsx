@@ -64,9 +64,11 @@ const ContactDetails = () => (
           .map(({ label, value, href, Icon, setting }) => (
             <li key={label}>
               {value ? (
-                <a
+                <Link
                   href={href}
-                  target={href.startsWith("http") ? "_blank" : undefined}
+                  // Web links open a new tab; mailto/tel go straight to the browser (target "_top"), never
+                  // through the router — a view transition has no page to fade to
+                  target={href.startsWith("http") ? "_blank" : "_top"}
                   rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                   className="group flex items-center gap-4 py-5"
                 >
@@ -80,7 +82,7 @@ const ContactDetails = () => (
                     aria-hidden="true"
                     className={`shrink-0 text-ink transition-transform duration-500 ${ease} group-hover:-translate-y-0.5 group-hover:translate-x-0.5`}
                   />
-                </a>
+                </Link>
               ) : (
                 <div className="flex items-center gap-4 py-5">
                   <Icon size={18} aria-hidden="true" className="shrink-0 text-muted" />
@@ -127,14 +129,14 @@ const ContactDetails = () => (
                 <br />
                 {fullAddress}
               </address>
-              <a
+              <Link
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 inline-block text-xs text-ink underline underline-offset-4 transition-opacity hover:opacity-60"
               >
                 Get directions
-              </a>
+              </Link>
             </>
           ) : (
             <p className="mt-4">

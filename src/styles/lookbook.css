@@ -1,6 +1,7 @@
 /* ---------- Lookbook cloth playground ------------------------------------- */
 
-.lookbook-world {
+/* Normal cursor over empty space; the hand only over a piece that can be picked up */
+.lookbook-world.can-grab {
   cursor: grab;
 }
 
@@ -8,59 +9,70 @@
   cursor: grabbing;
 }
 
-/* Title arrives once fonts are ready (it sets the floor) */
+/* Stage: the title in the background, the bag on the floor, the cloth in front */
+.lookbook-hero__stage {
+  --lookbook-floor: 2.25rem;
+  /* Sized by height: the bag (handles included) stands about two-thirds of the screen tall. The artwork is 264 × 314, so its
+     width is that height × 264/314. Capped by width so it never crowds the garments on narrow screens. */
+  --lookbook-bag-h: 65svh;
+  --lookbook-bag-w: min(calc(var(--lookbook-bag-h) * 264 / 314), 36vw);
+}
+
+@media (orientation: portrait) {
+  .lookbook-hero__stage {
+    --lookbook-bag-w: min(calc(var(--lookbook-bag-h) * 264 / 314), 70vw);
+  }
+}
+
+/* Held back under the loader until the intro plays */
+.lookbook-hero__stage:not(.is-live) .lookbook-bag--full,
+.lookbook-hero__stage:not(.is-live) .lookbook-hero__reveal {
+  opacity: 0;
+}
+
+/* Title arrives once fonts are ready (it's sized to the stage) — kept invisible: still the page's heading for
+   search and screen readers, and still gates the intro, but no longer shown behind the bag */
 .lookbook-hero__name {
   visibility: hidden;
+  opacity: 0;
+  color: #e2e7e9;
 }
 
 .lookbook-hero__name.ready {
   visibility: visible;
 }
 
-.lookbook-hero__note {
-  transition: opacity 0.2s ease;
+/* Shopping bag — centred on the floor (aspect ratio from its artwork); GSAP owns its transform */
+.lookbook-bag {
+  position: absolute;
+  bottom: var(--lookbook-floor);
+  left: calc(50% - var(--lookbook-bag-w) / 2);
+  width: var(--lookbook-bag-w);
+  transform-origin: 50% 99%;
+  pointer-events: none;
 }
 
-/* While a garment is held the note becomes the drop target — only its text changes */
+/* Its front copy over the cloth only shows while a piece falls in */
+.lookbook-bag--front {
+  visibility: hidden;
+}
+
+/* Instruction sits just above the handles, haloed in white where it crosses the title */
+.lookbook-hero__note {
+  bottom: calc(var(--lookbook-floor) + var(--lookbook-bag-w) * var(--lookbook-bag-reach) + 1.25rem);
+  text-shadow:
+    0 0 6px #fff,
+    0 0 18px #fff,
+    0 0 32px #fff;
+}
+
 .lookbook-hero__action {
   transition: color 0.3s ease;
 }
 
-.lookbook-hero__note.ready .lookbook-hero__action {
+.lookbook-hero__stage[data-mode="ready"] .lookbook-hero__action,
+.lookbook-hero__stage[data-mode="bagging"] .lookbook-hero__action {
   color: var(--color-accent);
-}
-
-/* Replay — hairline ring that fills slate, icon turns back on hover */
-.lookbook-replay {
-  border: 1px solid rgb(50 75 85 / 0.22);
-  background: rgb(255 255 255 / 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition:
-    background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.lookbook-replay__icon {
-  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.lookbook-replay:hover,
-.lookbook-replay:focus-visible {
-  border-color: var(--color-deep);
-  background: var(--color-deep);
-  color: #ffffff;
-}
-
-.lookbook-replay:hover .lookbook-replay__icon,
-.lookbook-replay:focus-visible .lookbook-replay__icon {
-  transform: rotate(-180deg);
-}
-
-.lookbook-replay:focus-visible {
-  outline: 1px solid var(--color-accent);
-  outline-offset: 3px;
 }
 
 /* Pickup guide */
@@ -88,12 +100,4 @@
   0%, 15%, 100% { opacity: 0; }
   30%, 65% { opacity: 0.25; }
   90% { opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lookbook-replay,
-  .lookbook-replay__icon {
-    transition: none;
-    animation: none !important;
-  }
 }

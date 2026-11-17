@@ -57,9 +57,9 @@ const Block = ({ block }: { block: LegalBlock }) => {
       {siteConfig.contact.email && (
         <>
           {" "}or email{" "}
-          <a href={`mailto:${siteConfig.contact.email}`} className="text-ink underline underline-offset-4 hover:opacity-60">
+          <Link href={`mailto:${siteConfig.contact.email}`} target="_top" className="text-ink underline underline-offset-4 hover:opacity-60">
             {siteConfig.contact.email}
-          </a>
+          </Link>
         </>
       )}
       .

@@ -4,3 +4,4 @@ export { default as HomeCurated } from "./HomeCurated";
 export { default as HomeMaking } from "./HomeMaking";
 export { default as HomeCollection } from "./HomeCollection";
 export { default as HomeSeenOnYou } from "./HomeSeenOnYou";
+export { default as HomeNewIn } from "./HomeNewIn";

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -64,7 +65,11 @@ const AboutFounder = () => {
         {/* Polaroid — overlaps the lower half of "Founder" */}
         <figure className="about-founder__polaroid relative z-1 -mt-[1.6rem] w-[15rem] border border-ink/70 bg-[#f5f5f5] p-3 pb-0 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.25)] will-change-transform md:-mt-[4rem] md:w-[20rem] md:p-3.5 md:pb-0">
           <div className="aspect-[1/0.92] overflow-hidden border border-ink/70 bg-white">
-            {FOUNDER_PHOTO && <img src={FOUNDER_PHOTO} alt={FOUNDER_NAME} className="cover" loading="lazy" />}
+            {FOUNDER_PHOTO && (
+              <ImageSkeleton className="size-full">
+                <img src={FOUNDER_PHOTO} alt={FOUNDER_NAME} className="cover" loading="lazy" />
+              </ImageSkeleton>
+            )}
           </div>
           <figcaption className="py-5 text-center text-ink md:py-6">
             <span className="primary-font block text-sm uppercase tracking-wide">{FOUNDER_NAME}</span>

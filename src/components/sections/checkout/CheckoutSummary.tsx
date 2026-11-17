@@ -7,6 +7,7 @@ import { TextField } from "@/components/ui/form";
 import { useCart, type CartLine } from "@/components/providers/CartProvider";
 import { siteConfig } from "@/config/site";
 import { formatMoney as money } from "@/data/products";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 type CheckoutSummaryProps = {
   lines: CartLine[];
@@ -73,7 +74,9 @@ const CheckoutSummary = ({ lines, subtotal, shipping = null, total = null, expan
                 {lines.map((line) => (
                   <li key={line.key} className="flex items-start gap-4">
                     <div className="relative w-16 shrink-0">
-                      <img src={line.product.image} alt="" className="aspect-3/4 w-full object-contain" />
+                      <ImageSkeleton className="aspect-3/4 w-full">
+                        <img src={line.product.image} alt="" className="size-full object-contain" />
+                      </ImageSkeleton>
                       <span
                         aria-label={`Quantity ${line.qty}`}
                         className="absolute -right-2 -top-2 center size-5 rounded-full bg-ink/70 text-[0.625rem] leading-none text-white"
