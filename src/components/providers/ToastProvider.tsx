@@ -4,8 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import Toast, { type ToastData, type ToastType } from "@/components/ui/Toast";
 
 const DEFAULT_DURATION = 5000;
-// Matches the exit slide + the stack closing the gap (toast-out 450ms, collapse 100ms delay + 500ms)
-const EXIT_MS = 600;
+// Matches the exit slide (toast-out 500ms)
+const EXIT_MS = 500;
 const MAX_VISIBLE = 4;
 
 type ToastOptions = {
@@ -71,11 +71,11 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     <ToastContext.Provider value={value}>
       {children}
 
-      {/* Top-right stack, newest first; above the drawers (z-100) */}
+      {/* Top-right stack just under the header, newest first; above the drawers (z-100) */}
       <section
         aria-label="Notifications"
         aria-live="polite"
-        className="toast-viewport pointer-events-none fixed inset-x-4 top-4 z-200 flex flex-col md:inset-x-auto md:right-6 md:top-6 md:w-96"
+        className="toast-viewport pointer-events-none fixed inset-x-4 top-[calc(var(--spacing-header-bar)+0.75rem)] z-200 flex flex-col md:inset-x-auto md:right-6 md:w-96"
       >
         {toasts.map((t) => (
           <Toast key={t.id} toast={t} onDismiss={dismiss} />

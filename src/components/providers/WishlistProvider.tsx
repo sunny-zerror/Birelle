@@ -27,33 +27,48 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
 
   const zcomIdOf = useCallback((id: string) => getProduct(id)?.zcom?.productId, [getProduct]);
 
+  // Flips the piece on the store, then says which way it went
+  const flip = useCallback(
+    (id: string, zcomId: string) => {
+      const title = getProduct(id)?.title;
+      const wasSaved = zcom.has(zcomId);
+      zcom
+        .toggle(zcomId)
+        .then(() =>
+          wasSaved
+            ? toast.info("Removed from your wishlist", { description: title })
+            : toast.success("Saved to your wishlist", { description: title }),
+        )
+        .catch((error) => toast.error(getErrorMessage(error)));
+    },
+    [getProduct, zcom, toast],
+  );
+
   // Saving needs an account — signed-out visitors sign in first, then the piece is saved for them
   const toggle = useCallback(
     (id: string) => {
       const zcomId = zcomIdOf(id);
       if (!zcomId) return;
       if (user) {
-        zcom.toggle(zcomId).catch((error) => toast.error(getErrorMessage(error)));
+        flip(id, zcomId);
         return;
       }
       openLogin({
         next: null,
         onSuccess: () => {
-          if (!zcom.has(zcomId)) zcom.toggle(zcomId).catch(() => undefined);
+          if (!zcom.has(zcomId)) flip(id, zcomId);
         },
       });
     },
-    [user, openLogin, zcom, zcomIdOf, toast],
+    [user, openLogin, zcom, zcomIdOf, flip],
   );
 
   const remove = useCallback(
     (id: string) => {
       const zcomId = zcomIdOf(id);
-      if (user && zcomId && zcom.has(zcomId)) {
-        zcom.toggle(zcomId).catch((error) => toast.error(getErrorMessage(error)));
-      }
+      if (user && zcomId && zcom.has(zcomId)) flip(id, zcomId);
     },
-    [user, zcom, zcomIdOf, toast],
+    [user, zcom, zcomIdOf, flip],
   );
 
   const value = useMemo<WishlistContextValue>(() => {

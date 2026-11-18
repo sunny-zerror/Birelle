@@ -40,7 +40,7 @@ const WishlistCard = ({ product, index }: { product: Product; index: number }) =
           />
         </ImageSkeleton>
         <div className="mt-4 text-center">
-          <h2 className="secondary-font text-xs uppercase tracking-wide text-ink">{product.title}</h2>
+          <h3 className="secondary-font text-xs uppercase tracking-wide text-ink">{product.title}</h3>
           <p className="mt-1.5 text-xs text-ink">{formatPrice(product.price)}</p>
         </div>
       </Link>
@@ -86,7 +86,7 @@ const AccountWishlist = () => {
         title="Wishlist"
         description={
           items.length > 0
-            ? `${items.length} saved ${items.length === 1 ? "piece" : "pieces"}. Choose a size to move one to your bag.`
+            ? `${items.length} saved ${items.length === 1 ? "piece" : "pieces"}. Choose a size to move one to your cart.`
             : undefined
         }
       />

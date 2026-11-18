@@ -20,7 +20,7 @@ const OrderCard = ({ order, index }: { order: Order; index: number }) => {
   return (
     <li className="order-card animate-panel-in border border-line" style={{ animationDelay: `${index * 60}ms` }}>
       {/* Summary row */}
-      <div className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+      <div className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-8">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <p className="secondary-font text-sm uppercase tracking-wide text-ink">Order {order.number}</p>
@@ -63,7 +63,7 @@ const OrderCard = ({ order, index }: { order: Order; index: number }) => {
         className={`grid transition-[grid-template-rows] duration-500 ${ease} ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="border-t border-line p-5 md:p-6">
+          <div className="border-t border-line p-6 md:p-8">
             <ul className="divide-y divide-line">
               {order.lines.map((l) => (
                 <li key={`${l.productId}-${l.size}-${l.colour}`} className="flex gap-4 py-4 first:pt-0">
@@ -133,7 +133,7 @@ const AccountOrders = () => {
       {orders.length === 0 ? (
         <EmptyState title="No orders yet" text="When you place an order it will appear here, with its status and details." />
       ) : (
-        <ul className="mt-8 flex flex-col gap-4 md:mt-10">
+        <ul className="mt-8 flex flex-col gap-5 md:mt-10">
           {orders.map((order, i) => (
             <OrderCard key={order.number} order={order} index={i} />
           ))}

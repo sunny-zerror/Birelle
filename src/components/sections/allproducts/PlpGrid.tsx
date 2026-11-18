@@ -1,9 +1,9 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link } from "next-view-transitions";
 import gsap from "gsap";
-import { Flip } from "gsap/all";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { RiEqualizerLine } from "@remixicon/react";
@@ -13,7 +13,7 @@ import { ImageSkeleton } from "@/components/ui/skeleton";
 import { useCatalog } from "@/components/providers/CatalogProvider";
 import { ONE_SIZE, isSizeAvailable } from "@/lib/zcom/adapters";
 
-gsap.registerPlugin(Flip, ScrollTrigger, useGSAP);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // A store category slug, or "all"
 type CategoryKey = string;
@@ -55,63 +55,54 @@ const PlpGrid = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  // What the grid is showing — it trails the controls by one fade-out, so cards only swap while unseen
+  const [view, setView] = useState({ category, sort, sizes: selectedSizes });
 
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLUListElement>(null);
   const pillRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const flipState = useRef<Flip.FlipState | null>(null);
 
-  const ordered = sortProducts(products, sort);
-  const visibleCount = ordered.filter((p) => (category === "all" || p.category === category) && hasSize(p, selectedSizes)).length;
-
-  // Snapshot card positions before any change so Flip can animate from them
-  const captureFlip = () => {
-    if (!gridRef.current) return;
-    flipState.current = Flip.getState(gridRef.current.querySelectorAll("[data-flip-id]"));
-  };
-
-  const changeCategory = (key: CategoryKey) => {
-    if (key === category) return;
-    captureFlip();
-    setCategory(key);
-  };
-
-  const changeSort = (key: SortKey) => {
-    if (key === sort) return;
-    captureFlip();
-    setSort(key);
-  };
+  const ordered = sortProducts(products, view.sort);
 
   const toggleSize = (size: string) =>
     setSelectedSizes((prev) => (prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]));
 
   const clearFilters = () => {
-    if (category !== "all" || sort !== "featured") captureFlip();
     setCategory("all");
     setSort("featured");
-    setSelectedSizes([]);
+    setSelectedSizes((prev) => (prev.length ? [] : prev));
   };
 
-  // Cards glide to their new slots; entering ones rise in, leaving ones fade down
-  useLayoutEffect(() => {
-    if (!flipState.current) return;
+  // The grid fades out, swaps its cards while unseen, then fades back in — nothing slides or rearranges
+  useGSAP(
+    () => {
+      const grid = gridRef.current;
+      if (!grid) return;
 
-    Flip.from(flipState.current, {
-      duration: 0.8,
-      ease: "power3.inOut",
-      stagger: 0.03,
-      absolute: true,
-      onEnter: (els) =>
-        gsap.fromTo(
-          els,
-          { opacity: 0, y: 40 },
-          { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.06, delay: 0.25 },
-        ),
-      onLeave: (els) => gsap.to(els, { opacity: 0, y: 20, duration: 0.35, ease: "power2.in" }),
-      onComplete: () => ScrollTrigger.refresh(),
-    });
-    flipState.current = null;
-  }, [category, sort]);
+      // Back on what is already showing (or first render): just make sure the grid is visible
+      if (view.category === category && view.sort === sort && view.sizes === selectedSizes) {
+        gsap.to(grid, { opacity: 1, duration: 0.3, ease: "power2.out", overwrite: true });
+        return;
+      }
+
+      gsap.to(grid, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.out",
+        overwrite: true,
+        onComplete: () => {
+          flushSync(() => setView({ category, sort, sizes: selectedSizes }));
+          // Cards the scroll reveal hasn't reached yet would otherwise come back invisible
+          const cards = grid.querySelectorAll(".plp-card");
+          gsap.killTweensOf(cards);
+          gsap.set(cards, { opacity: 1, y: 0 });
+          ScrollTrigger.refresh();
+          gsap.to(grid, { opacity: 1, duration: 0.5, ease: "power2.out" });
+        },
+      });
+    },
+    { scope: sectionRef, dependencies: [category, sort, selectedSizes] },
+  );
 
   // Black pill slides under the active category
   useLayoutEffect(() => {
@@ -168,7 +159,7 @@ const PlpGrid = () => {
                   }}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => changeCategory(key)}
+                  onClick={() => setCategory(key)}
                   className={`relative z-10 h-9 shrink-0 border px-6 text-sm transition-colors duration-500 md:min-w-24 ${
                     active ? "border-ink text-white" : "border-ink/40 text-ink hover:border-ink"
                   }`}
@@ -213,7 +204,7 @@ const PlpGrid = () => {
                       key={key}
                       type="button"
                       aria-pressed={sort === key}
-                      onClick={() => changeSort(key)}
+                      onClick={() => setSort(key)}
                       className="group relative pb-1 text-sm text-ink"
                     >
                       {label}
@@ -267,11 +258,10 @@ const PlpGrid = () => {
           className="plp-grid__list relative mt-stack grid grid-cols-2 gap-x-4 gap-y-12 md:mt-20 md:grid-cols-4 md:gap-x-8 md:gap-y-20 min-h-[32rem]"
         >
           {ordered.map((product) => {
-            const shown = (category === "all" || product.category === category) && hasSize(product, selectedSizes);
+            const shown = (view.category === "all" || product.category === view.category) && hasSize(product, view.sizes);
             return (
               <li
                 key={product.id}
-                data-flip-id={product.id}
                 className={`plp-card ${shown ? "" : "hidden"}`}
               >
                 <Link href={product.href} className="group block">

@@ -101,6 +101,7 @@ const WavePlane = ({ srcs, position, onWake }: Props) => {
   const { size, invalidate } = useThree();
   const textures = useRef(new Map<string, THREE.Texture>());
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const uniforms = useMemo(
     () => ({
       uFrom: { value: null as THREE.Texture | null },
@@ -146,7 +147,9 @@ const WavePlane = ({ srcs, position, onWake }: Props) => {
     const base = Math.floor(pos);
     const from = textures.current.get(srcs[mod(base, srcs.length)]);
     const to = textures.current.get(srcs[mod(base + 1, srcs.length)]);
-    if (!from || !to || !material) return; // hold the plain image until both are decoded
+    // Stay hidden until both are decoded, so the plain image underneath shows instead of an empty plane
+    if (meshRef.current) meshRef.current.visible = !!(from && to);
+    if (!from || !to || !material) return;
 
     const u = material.uniforms;
     u.uFrom.value = from;
@@ -158,7 +161,7 @@ const WavePlane = ({ srcs, position, onWake }: Props) => {
   });
 
   return (
-    <mesh raycast={noRaycast} frustumCulled={false}>
+    <mesh ref={meshRef} visible={false} raycast={noRaycast} frustumCulled={false}>
       <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={materialRef}

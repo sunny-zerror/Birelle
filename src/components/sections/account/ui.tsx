@@ -1,11 +1,11 @@
-import { Link } from "next-view-transitions";
+import NextLink from "next/link";
 import { RiArrowRightLine } from "@remixicon/react";
 import Button from "@/components/ui/Button";
 import type { OrderStatus } from "@/types";
 
 export const ease = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
-// Page title for each dashboard tab, with an optional action on the right
+// Title for each dashboard tab (the page's h1 is the "Hello" band above), with an optional action on the right
 export const AccountHeading = ({
   title,
   description,
@@ -15,16 +15,16 @@ export const AccountHeading = ({
   description?: string;
   action?: React.ReactNode;
 }) => (
-  <header className="account-heading flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+  <header className="account-heading flex flex-wrap items-end justify-between gap-4">
     <div>
-      <h1 className="primary-font text-2xl font-normal uppercase text-ink md:text-3xl">{title}</h1>
-      {description && <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted">{description}</p>}
+      <h2 className="primary-font text-2xl font-normal text-ink md:text-3xl">{title}</h2>
+      {description && <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">{description}</p>}
     </div>
     {action}
   </header>
 );
 
-// Hairline-bordered block — the dashboard's only container style
+// Hairline-bordered block — the dashboard's only container style (as the Contact form)
 export const Panel = ({
   title,
   action,
@@ -36,10 +36,10 @@ export const Panel = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <section className={`account-panel border border-line p-5 md:p-6 ${className}`}>
+  <section className={`account-panel border border-line p-6 md:p-8 ${className}`}>
     {(title || action) && (
-      <div className="mb-5 flex items-baseline justify-between gap-4">
-        {title && <h2 className="secondary-font text-xs uppercase tracking-wide text-ink">{title}</h2>}
+      <div className="mb-6 flex items-baseline justify-between gap-4 border-b border-line pb-4">
+        {title && <h3 className="secondary-font text-sm uppercase tracking-wide text-ink">{title}</h3>}
         {action}
       </div>
     )}
@@ -47,15 +47,13 @@ export const Panel = ({
   </section>
 );
 
-// Small underlined link with an arrow that nudges on hover
+// Small link with the site's drawn underline and an arrow that nudges on hover. A plain Next link: it moves between
+// account tabs, which swap only the content column rather than fading the whole page
 export const ArrowLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-  <Link
-    href={href}
-    className="group inline-flex shrink-0 items-center gap-1.5 text-xs text-ink underline-offset-4 transition-opacity hover:underline"
-  >
-    {children}
+  <NextLink href={href} className="group inline-flex shrink-0 items-center gap-1.5 text-xs text-ink">
+    <span className="link-line">{children}</span>
     <RiArrowRightLine size={12} className={`transition-transform duration-500 ${ease} group-hover:translate-x-0.5`} />
-  </Link>
+  </NextLink>
 );
 
 export const EmptyState = ({
@@ -70,9 +68,9 @@ export const EmptyState = ({
   /** Replaces the link button, e.g. a button that opens a form */
   action?: React.ReactNode;
 }) => (
-  <div className="flex animate-panel-in flex-col items-center px-4 py-16 text-center md:py-24">
-    <p className="primary-font text-xl text-ink">{title}</p>
-    <p className="mt-3 max-w-[20rem] text-sm leading-relaxed text-muted">{text}</p>
+  <div className="mt-8 flex animate-panel-in flex-col items-center border border-line px-6 py-16 text-center md:mt-10 md:py-24">
+    <p className="primary-font text-2xl text-ink">{title}</p>
+    <p className="mt-3 max-w-[22rem] text-sm leading-relaxed text-muted">{text}</p>
     <div className="mt-8">{action ?? <Button href={cta.href}>{cta.label}</Button>}</div>
   </div>
 );

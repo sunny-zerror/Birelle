@@ -7,7 +7,7 @@ import { useAddresses } from "@/hooks/useAddresses";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/data/products";
 import { formatPhone } from "@/lib/countries";
-import { formatDate, formatMonth } from "@/utils/date";
+import { formatDate } from "@/utils/date";
 import { AccountHeading, ArrowLink, Panel, StatusBadge } from "./ui";
 import { ImageSkeleton } from "@/components/ui/skeleton";
 
@@ -24,10 +24,10 @@ const AccountOverview = () => {
     <div className="account-overview">
       <AccountHeading
         title="Overview"
-        description={`Member since ${formatMonth(user.createdAt)}. Track your orders, keep pieces for later and manage your details.`}
+        description="Track your orders, keep pieces for later and manage your details."
       />
 
-      <div className="mt-8 grid gap-4 md:mt-10 lg:grid-cols-2 lg:gap-6">
+      <div className="mt-8 grid gap-5 md:mt-10 xl:grid-cols-2 xl:gap-6">
         {/* Latest order */}
         <Panel title="Latest order" action={orders.length > 0 && <ArrowLink href="/account/orders">All orders</ArrowLink>}>
           {latest ? (
@@ -39,9 +39,9 @@ const AccountOverview = () => {
               <p className="mt-1.5 text-xs text-muted">
                 {formatDate(latest.placedAt)} · {formatPrice(latest.total)}
               </p>
-              <ul className="mt-5 flex gap-2">
+              <ul className="mt-6 flex gap-2">
                 {latest.lines.slice(0, 4).map((l) => (
-                  <li key={`${l.productId}-${l.size}-${l.colour}`} className="aspect-3/4 w-14 overflow-hidden bg-neutral-100">
+                  <li key={`${l.productId}-${l.size}-${l.colour}`} className="aspect-3/4 w-16 overflow-hidden bg-neutral-100">
                     <ImageSkeleton className="size-full"><img src={l.image} alt={l.title} loading="lazy" className="cover" /></ImageSkeleton>
                   </li>
                 ))}
@@ -64,10 +64,10 @@ const AccountOverview = () => {
               <p className="text-sm text-ink">
                 {wishlist.length} saved {wishlist.length === 1 ? "piece" : "pieces"}
               </p>
-              <ul className="mt-5 flex gap-2">
+              <ul className="mt-6 flex gap-2">
                 {wishlist.slice(0, 4).map((p) => (
                   <li key={p.id}>
-                    <Link href={p.href} className="center block aspect-3/4 w-14 overflow-hidden bg-neutral-100">
+                    <Link href={p.href} className="center block aspect-3/4 w-16 overflow-hidden bg-neutral-100">
                       <ImageSkeleton className="center size-full"><img src={p.image} alt={p.title} loading="lazy" className="w-[85%]" /></ImageSkeleton>
                     </Link>
                   </li>

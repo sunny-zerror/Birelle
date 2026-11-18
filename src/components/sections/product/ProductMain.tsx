@@ -11,6 +11,7 @@ import type { Product } from "@/types";
 import { ImageSkeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/components/providers/CartProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
+import { useToast } from "@/components/providers/ToastProvider";
 
 gsap.registerPlugin(useGSAP);
 
@@ -34,6 +35,7 @@ const details = [
 
 const ProductMain = ({ product }: { product: Product }) => {
   const { add } = useCart();
+  const toast = useToast();
   const sizes = getSizes(product);
   // One-size pieces are ready to add straight away
   const [size, setSize] = useState<string | null>(sizes.length === 1 && sizes[0] === ONE_SIZE ? ONE_SIZE : null);
@@ -71,7 +73,10 @@ const ProductMain = ({ product }: { product: Product }) => {
     if (navigator.share) {
       await navigator.share({ title: product.title, url }).catch(() => {});
     } else {
-      await navigator.clipboard?.writeText(url);
+      await navigator.clipboard
+        ?.writeText(url)
+        .then(() => toast.success("Link copied"))
+        .catch(() => toast.error("Couldn't copy the link"));
     }
   };
 

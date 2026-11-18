@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -27,12 +27,14 @@ const HomeHero = () => {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const { isLoaded } = useLoader();
+  const { isLoaded, entry } = useLoader();
+  // Under the loader the film only buffers; coming back to the page later it autoplays muted as usual
+  const [hadEnteredAtMount] = useState(entry !== null);
 
-  // The film may already be playable before hydration, when React wasn't yet listening for canplay
+  // The film may already show a frame (or have failed) before hydration, when React wasn't yet listening
   const attachVideo = (video: HTMLVideoElement | null) => {
     videoRef.current = video;
-    if (video && video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) setIsVideoReady(true);
+    if (video && (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA || video.error)) setIsVideoReady(true);
   };
 
   const togglePlay = () => {
@@ -48,6 +50,19 @@ const HomeHero = () => {
     video.muted = !video.muted;
     setMuted(video.muted);
   };
+
+  // Entering from the loader starts the film from its first frame, with sound if that was the choice;
+  // if the browser refuses the sound, it plays muted
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || entry === null || hadEnteredAtMount) return;
+    video.currentTime = 0;
+    video.muted = entry !== "sound";
+    video.play().catch(() => {
+      video.muted = true;
+      video.play().catch(() => {});
+    });
+  }, [entry, hadEnteredAtMount]);
 
   // Intro — the video is full screen from the start; only the text over it comes in, held hidden under the loader
   useGSAP(
@@ -143,12 +158,16 @@ const HomeHero = () => {
       >
         <video
           ref={attachVideo}
-          loop autoPlay muted playsInline
+          loop autoPlay={hadEnteredAtMount} preload="auto" muted playsInline
           className={`cover ${isVideoReady ? "opacity-100" : "opacity-0"}`}
           src="/videos/home_hero_video.mp4"
+          // The skeleton ends on the first frame, or if the film can't load at all (rather than sweeping for good)
+          onLoadedData={() => setIsVideoReady(true)}
           onCanPlay={() => setIsVideoReady(true)}
+          onError={() => setIsVideoReady(true)}
           onPlay={() => setPaused(false)}
           onPause={() => setPaused(true)}
+          onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
         />
         {/* Film caption + playback controls */}
         <div className="home-hero__film secondary-font absolute inset-x-0 bottom-16 z-1 md:bottom-6">

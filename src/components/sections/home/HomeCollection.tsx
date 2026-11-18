@@ -70,7 +70,7 @@ const HomeCollection = () => {
           A collection shaped by uninhibited movement and contemporary expression, where expressive prints, and
           considered details come together without boundaries.
         </p>
-        <Button href="/collection">
+        <Button href="/shop">
           Discover the Collection
         </Button>
       </div>

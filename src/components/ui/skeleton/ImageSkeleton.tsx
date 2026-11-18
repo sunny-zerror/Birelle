@@ -4,25 +4,27 @@ import { useEffect, useRef } from "react";
 
 type ImageSkeletonProps = React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode };
 
-// Frame for an <img> / next/image: shows the skeleton sweep behind the picture
-// until it has loaded. Works with server-rendered children (listens in the DOM).
+// Frame for an <img> / next/image: shows the skeleton sweep behind the picture until it has loaded (or failed).
+// Works with server-rendered children: it checks the picture once mounted, then listens for any image inside
+// finishing, including one rendered or swapped in later.
 const ImageSkeleton = ({ className = "", children, ...rest }: ImageSkeletonProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
-    const img = el?.querySelector("img");
-    if (!el || !img) return;
+    if (!el) return;
     const done = () => {
       el.dataset.loaded = "";
     };
-    // Cached images may have finished before hydration
-    if (img.complete && img.naturalWidth) return done();
-    img.addEventListener("load", done, { once: true });
-    img.addEventListener("error", done, { once: true });
+    // Finished before hydration — loaded, or failed: a broken image counts as complete too, and its error event
+    // has already fired, so waiting for one would keep the sweep running for good
+    if (el.querySelector("img")?.complete) return done();
+    // load and error don't bubble, so catch them on their way down
+    el.addEventListener("load", done, { capture: true, once: true });
+    el.addEventListener("error", done, { capture: true, once: true });
     return () => {
-      img.removeEventListener("load", done);
-      img.removeEventListener("error", done);
+      el.removeEventListener("load", done, { capture: true });
+      el.removeEventListener("error", done, { capture: true });
     };
   }, []);
 

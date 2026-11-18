@@ -260,10 +260,11 @@ const paragraphs = (html: string | null | undefined) =>
     .filter(Boolean);
 
 /**
- * A same-origin copy of a CDN image, served through the Next image optimizer. The 3D hero
- * reads its artwork in WebGL, which needs CORS headers the media CDN doesn't send.
+ * A same-origin copy of a CDN image, served through the Next image optimizer. The 3D hero and the
+ * curated carousel read their artwork in WebGL, which needs CORS headers the media CDN doesn't send.
+ * `width` must be one of the optimizer's sizes.
  */
-const sameOrigin = (url: string, width = 640) =>
+export const sameOrigin = (url: string, width = 640) =>
   /^https?:\/\//.test(url) ? `/_next/image?url=${encodeURIComponent(url)}&w=${width}&q=75` : url;
 
 export const toLook = (l: ListLookbook | DetailLookbook, index: number): Look => {

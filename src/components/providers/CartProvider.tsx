@@ -74,6 +74,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       zcom
         .addItem({ productId: product.zcom.productId, variantId, qty })
         .then(() => {
+          toast.success("Added to your cart", { description: [product.title, colour, size].filter(Boolean).join(" · ") });
           const variant = { _id: variantId, sku: null, title: null, optionValues: null, price: product.price, compareAtPrice: null, status: null, availability: null, availableQuantity: null };
           analytics.addToCart({ _id: product.zcom!.productId, name: product.title, variants: [variant], productOptions: [] }, variant, qty);
           // Meta / Google Ads add-to-cart (sent only with the shopper's ads consent); ids are variant ids
@@ -81,25 +82,40 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         })
         .catch(fail);
     },
-    [getProduct, zcom, analytics, ads, fail],
+    [getProduct, zcom, analytics, ads, fail, toast],
   );
 
   const findLine = useCallback((key: string) => zcom.lines.find((l) => keyOf(l) === key), [zcom.lines]);
 
+  const removed = useCallback(
+    (line: ZcomCartLine) =>
+      toast.info("Removed from your cart", { description: (getByZcomId(line.productId) ?? fallbackProduct(line)).title }),
+    [toast, getByZcomId],
+  );
+
+  // Quantity changes show in the cart itself; only taking a piece out (down to 0) is announced
   const setQty = useCallback(
     (key: string, qty: number) => {
       const line = findLine(key);
-      if (line) zcom.setQuantity(line, qty).catch(fail);
+      if (!line) return;
+      zcom
+        .setQuantity(line, qty)
+        .then(() => qty <= 0 && removed(line))
+        .catch(fail);
     },
-    [findLine, zcom, fail],
+    [findLine, zcom, fail, removed],
   );
 
   const remove = useCallback(
     (key: string) => {
       const line = findLine(key);
-      if (line) zcom.removeLine(line).catch(fail);
+      if (!line) return;
+      zcom
+        .removeLine(line)
+        .then(() => removed(line))
+        .catch(fail);
     },
-    [findLine, zcom, fail],
+    [findLine, zcom, fail, removed],
   );
 
   // After a paid order the store empties the bag itself — re-read it
@@ -107,13 +123,20 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     void zcom.refetch();
   }, [zcom]);
 
+  // A refused code is shown under the field by the caller, so only success is announced here
   const applyCode = useCallback(async (code: string) => {
     await zcom.applyPromotion(code);
-  }, [zcom]);
+    toast.success("Discount code applied", { description: code.toUpperCase() });
+  }, [zcom, toast]);
 
   const removeCode = useCallback(async () => {
-    await zcom.removePromotion();
-  }, [zcom]);
+    try {
+      await zcom.removePromotion();
+      toast.info("Discount code removed");
+    } catch (error) {
+      fail(error);
+    }
+  }, [zcom, toast, fail]);
 
   const value = useMemo<CartContextValue>(() => {
     const lines: CartLine[] = zcom.lines.map((l) => {

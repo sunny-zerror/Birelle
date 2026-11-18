@@ -52,7 +52,6 @@ const Figure = ({
 
 const HomeLookbook = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [scrollFace, setScrollFace] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
   const [spinFace, setSpinFace] = useState(0);
 
@@ -75,20 +74,7 @@ const HomeLookbook = () => {
     { scope: sectionRef },
   );
 
-  // Scrolling through the section turns both figures through their four views
-  useGSAP(
-    () => {
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: "top 75%",
-        end: "bottom 25%",
-        onUpdate: (self) => setScrollFace(Math.min(FACES - 1, Math.floor(self.progress * FACES))),
-      });
-    },
-    { scope: sectionRef },
-  );
-
-  // Hovering a figure spins it continuously, starting from the view after the current one
+  // Both figures face front; hovering one spins it continuously, starting from the next view
   useEffect(() => {
     if (hovered === null) return;
     const id = window.setInterval(() => setSpinFace((f) => (f + 1) % FACES), SPIN_MS);
@@ -96,20 +82,25 @@ const HomeLookbook = () => {
   }, [hovered]);
 
   const enter = (i: number) => {
-    setSpinFace((scrollFace + 1) % FACES);
+    setSpinFace(1);
     setHovered(i);
   };
   const leave = () => setHovered(null);
 
   return (
-    <section ref={sectionRef} id="home-lookbook" className="home-lookbook relative bg-white">
+    // One screen tall, less the fixed header; on mobile the copy below shares that height with the plate
+    <section
+      ref={sectionRef}
+      id="home-lookbook"
+      className="home-lookbook relative flex h-[calc(100svh-var(--spacing-header-bar))] flex-col bg-white"
+    >
       {/* Editorial plate — two looks framing the centre column */}
-      <div className="home-lookbook__media container relative flex aspect-1440/931 w-full items-end justify-between overflow-hidden pt-[4vw] md:px-[8vw]">
+      <div className="home-lookbook__media container relative flex min-h-0 w-full flex-1 items-end justify-between overflow-hidden pt-[4vw] md:px-[8vw]">
         {people.map((person, i) => (
           <Figure
             key={person.key}
             person={person}
-            face={hovered === i ? spinFace : scrollFace}
+            face={hovered === i ? spinFace : 0}
             onEnter={() => enter(i)}
             onLeave={leave}
           />

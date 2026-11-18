@@ -8,6 +8,7 @@ import { formatPrice } from "@/data/products";
 import { useCatalog } from "@/components/providers/CatalogProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import { ImageSkeleton } from "@/components/ui/skeleton";
+import { sameOrigin } from "@/lib/zcom/adapters";
 import type { Product } from "@/types";
 import CuratedWaveCanvas from "./CuratedWaveCanvas";
 
@@ -67,7 +68,8 @@ const Card = ({ product, isWished, onToggle }: CardProps) => (
 const HomeCuratedCarousel = ({ products }: { products: Product[] }) => {
   // Listed twice so the loop always has cards waiting off-screen on both sides
   const slides = [...products, ...products];
-  const FEATURED = products.map((p) => p.featured);
+  // The store's hover image (else the product's second image) — same-origin copies, as WebGL can't read the CDN's
+  const FEATURED = products.map((p) => sameOrigin(p.featured, 828));
   const COUNT = slides.length;
   const { has, toggle } = useWishlist();
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -277,7 +279,7 @@ const HomeCuratedCarousel = ({ products }: { products: Product[] }) => {
           className="home-curated__canvas absolute left-1/2 top-0 z-10 -ml-[30vw] aspect-3/4 w-[60vw] md:-ml-[10vw] md:w-[20vw]"
         >
           {/* Plain image underneath until the WebGL textures are ready */}
-          <img src={activeProduct.featured} alt="" draggable={false} className="cover opacity-0 absolute inset-0" />
+          <img src={activeProduct.featured} alt="" draggable={false} className="cover absolute inset-0" />
           <CuratedWaveCanvas srcs={FEATURED} position={positionRef} onWake={onWaveWake} />
 
           <Link href={activeProduct.href} draggable={false} className="absolute inset-0" aria-label={activeProduct.title}>

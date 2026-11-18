@@ -11,7 +11,7 @@ const HomeNewIn = () => (
         alt="Model crouching in a palm house in a painted vest and cream trousers with printed side panels"
         fill
         sizes="100vw"
-        className="object-cover object-top"
+        className="object-cover  brightness-125 object-top"
       />
       {/* Soft shade at the foot so the white type always reads */}
       <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/45 to-transparent" />
